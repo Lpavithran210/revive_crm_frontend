@@ -25,7 +25,7 @@ const Course = lazy(() => import('./pages/Course'))
 function App() {
   return (
     <BrowserRouter>
-      <Suspense fallback={<Box sx={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src='/1.png' width={100} /></Box>}>
+      <Suspense fallback={<Box sx={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src='./revivelogo.png' width={100} /></Box>}>
         <Routes>
           <Route path='/signin' element={<Login />} />
           <Route path='/forgot_password' element={<ForgotPassword />} />

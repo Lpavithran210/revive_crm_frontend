@@ -46,33 +46,33 @@ const ProtectedRoute = ({ allowedRoles }) => {
                 open={open}
                 onClose={handleClose}
             >
-                {role === 'admin' && <>
+                {role === 'admin' && [
                     <MenuItem onClick={() => [handleClose(), navigate('/')]}>
                         <ListItemIcon>
                             <HomeIcon fontSize="small" />
                         </ListItemIcon>
                         <ListItemText>Home</ListItemText>
-                    </MenuItem>
+                    </MenuItem>,
                     <MenuItem onClick={() => [handleClose(), navigate('/enquiry')]}>
                         <ListItemIcon>
                             <PostAddIcon fontSize="small" />
                         </ListItemIcon>
                         <ListItemText>Add enquiries</ListItemText>
-                    </MenuItem>
+                    </MenuItem>,
                     <MenuItem onClick={() => [handleClose(), navigate('/team')]}>
                         <ListItemIcon>
                             <PersonAddAlt1Icon fontSize="small" />
                         </ListItemIcon>
                         <ListItemText>Add users</ListItemText>
-                    </MenuItem>
+                    </MenuItem>,
                     <MenuItem onClick={() => [handleClose(), navigate('/course')]}>
                         <ListItemIcon>
                             <UploadIcon fontSize="small" />
                         </ListItemIcon>
                         <ListItemText>Add course</ListItemText>
-                    </MenuItem>
-                    <Divider/>
-                </>}
+                    </MenuItem>,
+                    <Divider/>,
+                ]}
                 <MenuItem onClick={handleLogout}>
                     <ListItemIcon>
                         <LogoutIcon fontSize="small" />

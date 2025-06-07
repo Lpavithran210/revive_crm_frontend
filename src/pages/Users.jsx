@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { apiCall } from "../utils/axios";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { allMembers } from "../features/members";
 import { useDispatch, useSelector } from "react-redux";
+import { fetchMembers } from "../features/members";
 
 export const StyledTableCell = styled(TableCell)(({ theme }) => ({
         [`&.${tableCellClasses.head}`]: {
@@ -30,12 +30,12 @@ const Users = () => {
     const [snackbarOpen, setSnackbarOpen] = useState({ open: false, message: '', type: '' });
     const [errors, setErrors] = useState({})
     const [state, setState] = useState(initialFormState)
-    const [users, setUsers] = useState([])
     const [open, setOpen] = useState(false);
     const [deleteId, setDeleteId] = useState(null)
     const dispatch = useDispatch()
     const { accessToken } = useSelector((state) => state.user);
-
+    const members = useSelector((state) => state.members.members);
+    
     const handleInputChange = (e) => {
         const { name, value } = e.target
         setState(prevState => ({ ...prevState, [name]: value }))
@@ -70,20 +70,10 @@ const Users = () => {
             setState(initialFormState);
             setErrors({});
             setSnackbarOpen({ open: true, type: 'success', message: res.message });
-            getAllUsers()
+            dispatch(fetchMembers());
         } catch (e) {
             console.log(e)
-            setSnackbarOpen({ open: true, type: 'error', message: e.response.data.message });
-        }
-    }
-
-    const getAllUsers = async () => {
-        try {
-            const users = await apiCall('get', '/user/members', null, null, accessToken)
-            setUsers(users.data)
-            dispatch(allMembers(users.data))
-        } catch (e) {
-            console.log(e.message)
+            setSnackbarOpen({ open: true, type: 'error', message: e.response?.data?.message || "Error adding user"  });
         }
     }
 
@@ -98,16 +88,17 @@ const Users = () => {
             const res = await apiCall('delete', `/user/${id}`, null, null, accessToken)
             setOpen(false)
             setSnackbarOpen({ open: true, type: 'success', message: res.message });
-            getAllUsers()
+            dispatch(fetchMembers());
         } catch (e) {
             console.log(e)
-            setSnackbarOpen({ open: true, type: 'error', message: e.response.data.message });
+            setSnackbarOpen({ open: true, type: 'error',  message: e.response?.data?.message || "Error deleting user" });
         }
     }
 
     useEffect(() => {
-        getAllUsers()
-    }, [])
+        dispatch(fetchMembers());
+    }, [dispatch])
+
     return <>
         <Box sx={{ padding: 2 }}>
             <Typography variant="h6" sx={{ my: 2 }}>All Users</Typography>
@@ -122,7 +113,7 @@ const Users = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {users.map((row) => (
+                        {members.map((row) => (
                             <StyledTableRow key={row._id}>
                                 <StyledTableCell component="th" scope="row">{row.name}</StyledTableCell>
                                 <StyledTableCell align="center">{row.email}</StyledTableCell>

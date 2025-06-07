@@ -14,6 +14,7 @@ import StudentsTable from '../components/Table';
 import { apiCall } from '../utils/axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCourses } from '../features/courses';
+import { fetchMembers } from '../features/members';
 
 const Home = () => {
 
@@ -123,6 +124,7 @@ const Home = () => {
 
     useEffect(() => {
         dispatch(fetchCourses())
+        dispatch(fetchMembers())
     }, [])
 
     return <>

@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMode = false }) => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [errors, setErrors] = useState({})
-    const allUsers = useSelector(state => state.members.allTeams);
+    const allUsers = useSelector(state => state.members.members);
     const members = allUsers.filter(user => user.role === 'user')
     const courses = useSelector(state => state.courses.allCourses)
     const handleInputChange = (e) => {

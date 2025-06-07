@@ -4,31 +4,34 @@ import { useEffect, useState } from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { StyledTableCell, StyledTableRow } from "./Users";
-import { allCourse } from "../features/courses";
 import { useDispatch, useSelector } from "react-redux";
+import { fetchCourses } from "../features/courses";
 
 const Course = () => {
-    const initialFormState = { title: '', fee: null };
-    const [allCourses, setAllCourses] = useState([]);
-    const [snackbarOpen, setSnackbarOpen] = useState({ open: false, message: '', type: '' });
+    const initialFormState = { title: '', fee: '' };
     const [course, setCourse] = useState(initialFormState);
-    const [errors, setErrors] = useState({})
+    const [errors, setErrors] = useState({});
+    const [snackbarOpen, setSnackbarOpen] = useState({ open: false, message: '', type: '' });
     const [open, setOpen] = useState(false);
-    const [deleteId, setDeleteId] = useState(null)
-    const dispatch = useDispatch()
+    const [deleteId, setDeleteId] = useState(null);
+
+    const dispatch = useDispatch();
     const { accessToken } = useSelector((state) => state.user);
-    
+    const allCourses = useSelector((state) => state.courses.allCourses);
+
+    useEffect(() => {
+        dispatch(fetchCourses());
+    }, [dispatch]);
+
     const handleInputChange = (e) => {
-        const { name, value } = e.target
-        setCourse(prevState => ({ ...prevState, [name]: value }))
-    }
+        const { name, value } = e.target;
+        setCourse(prevState => ({ ...prevState, [name]: value }));
+    };
 
     const validateForm = () => {
         const newErrors = {};
-
         if (!course.title?.trim()) newErrors.title = "Title is required";
         if (!course.fee?.trim()) newErrors.fee = "Fee is required";
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -37,41 +40,33 @@ const Course = () => {
         if (validateForm()) {
             addCourse();
         }
-    }
+    };
+
+    const addCourse = async () => {
+        try {
+            const res = await apiCall('post', '/course/add_course', course, null, accessToken);
+            setCourse(initialFormState);
+            setErrors({});
+            setSnackbarOpen({ open: true, type: 'success', message: res.message });
+            dispatch(fetchCourses());
+        } catch (e) {
+            console.log(e);
+            setSnackbarOpen({ open: true, type: 'error', message: e.response?.data?.message || 'Error adding course' });
+        }
+    };
 
     const handleDelete = async (id) => {
         try {
-            const res = await apiCall('delete', `/course/${id}`, null, null, accessToken)
-            setOpen(false)
+            const res = await apiCall('delete', `/course/${id}`, null, null, accessToken);
+            setOpen(false);
             setSnackbarOpen({ open: true, type: 'success', message: res.message });
-            getAllCourses()
+            dispatch(fetchCourses());
         } catch (e) {
-            console.log(e)
-            setSnackbarOpen({ open: true, type: 'error', message: e.response.data.message });
+            console.log(e);
+            setSnackbarOpen({ open: true, type: 'error', message: e.response?.data?.message || 'Error deleting course' });
         }
-    }
-
-    const addCourse = async () => {
-        const res = await apiCall('post', '/course/add_course', course, null, accessToken);
-        setCourse(initialFormState);
-        setErrors({});
-        setSnackbarOpen({ open: true, type: 'success', message: res.message });
-        getAllCourses();
     };
 
-    const getAllCourses = async () => {
-        try {
-            const res = await apiCall('get', '/course', null, null, accessToken)
-            setAllCourses(res.data)
-            dispatch(allCourse(res.data))
-        } catch (e) {
-            console.log(e.message)
-        }
-    }
-
-    useEffect(() => {
-        getAllCourses();
-    }, []);
 
     return <>
         <Box sx={{ padding: 2 }}>

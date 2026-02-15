@@ -31,19 +31,20 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
     };
 
     useEffect(() => {
-        const totalPaidAmount = formData.payments?.reduce((acc, payment) => acc + (payment.paid_amount || 0), 0) || 0;
-
-        if (formData.course && courses.length > 0) {
-            const selectedCourse = courses.find(course => course.title === formData.course);
-            if (selectedCourse && formData.course_fee !== selectedCourse.fee) {
-                setFormData(prev => ({
-                    ...prev,
-                    course_fee: selectedCourse.fee,
-                    paid_amount: totalPaidAmount
-                }));
-            }
+        if (!formData.course || courses.length === 0) return;
+    
+        const selectedCourse = courses.find(
+            course => course.title === formData.course
+        );
+    
+        if (selectedCourse) {
+            setFormData(prev => ({
+                ...prev,
+                course_fee: selectedCourse.fee
+            }));
         }
     }, [formData.course, courses]);
+    
 
     const { role } = useSelector((state) => state.user);
     const isUser = role === 'user';
@@ -81,12 +82,122 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleFormSubmit = () => {
-        if (validateForm()) {
-            onSubmit();
-            setSnackbarOpen(true);
-        }
+    const processPaymentOnCreate = () => {
+        if (!formData.amount || Number(formData.amount) <= 0) return null;
+    
+        return {
+            paid_amount: Number(formData.amount),
+            payment_mode: formData.payment_mode,
+            payment_date: new Date().toISOString()
+        };
     };
+
+    useEffect(() => {
+        const totalPaid =
+            formData.payments?.reduce(
+                (sum, p) => sum + Number(p.paid_amount || 0),
+                0
+            ) || 0;
+    
+        setFormData(prev => ({...prev, paid_amount: totalPaid, balance_amount: Number(prev.course_fee || 0) - totalPaid,
+            payment_status: totalPaid === 0 ? "Unpaid" : Number(prev.course_fee) - totalPaid > 0 ? "Partially Paid" : "Fully Paid"
+        }));
+    }, [formData.payments]);
+    
+
+    // const handleFormSubmit = () => {
+    //     if (!validateForm()) return;
+    
+    //     let updatedPayments = [...(formData.payments || [])];
+    //     let totalPaid = formData.paid_amount || 0;
+    
+    //     const newPayment = processPaymentOnCreate();
+    
+    //     if (newPayment) {
+    //         updatedPayments.push(newPayment);
+    //         totalPaid += newPayment.paid_amount;
+    //     }
+    
+    //     const courseFee = Number(formData.course_fee || 0);
+    //     const balanceAmount = courseFee - totalPaid;
+    
+    //     let paymentStatus = "Unpaid";
+    //     if (totalPaid > 0 && balanceAmount > 0) paymentStatus = "Partially Paid";
+    //     if (balanceAmount <= 0) paymentStatus = "Fully Paid";
+    
+    //     setFormData(prev => ({
+    //         ...prev,
+    //         payments: updatedPayments,
+    //         paid_amount: totalPaid,
+    //         balance_amount: balanceAmount,
+    //         payment_status: paymentStatus
+    //     }));
+    
+    //     onSubmit({
+    //         ...formData,
+    //         payments: updatedPayments,
+    //         paid_amount: totalPaid,
+    //         balance_amount: balanceAmount,
+    //         payment_status: paymentStatus
+    //     });
+    
+    //     setSnackbarOpen(true);
+    // };  
+    
+    const handleFormSubmit = () => {
+        if (!validateForm()) return;
+    
+        let updatedPayments = [...(formData.payments || [])];
+        let totalPaid = formData.paid_amount || 0;
+    
+        const newPayment = processPaymentOnCreate();
+    
+        if (newPayment) {
+            updatedPayments.push(newPayment);
+            totalPaid += newPayment.paid_amount;
+        }
+    
+        const courseFee = Number(formData.course_fee || 0);
+        const balanceAmount = courseFee - totalPaid;
+    
+        let paymentStatus = "Unpaid";
+        if (totalPaid > 0 && balanceAmount > 0) paymentStatus = "Partially Paid";
+        if (balanceAmount <= 0) paymentStatus = "Fully Paid";
+    
+        // ✅ NEW history entry (USES CURRENT VALUES)
+        const newHistory = {
+            status: formData.status,
+            note: formData.note,
+            attender: formData.attender,
+            updated_at: new Date().toISOString()
+        };
+    
+        const updatedHistory = [
+            ...(formData.history || []),
+            newHistory
+        ];
+    
+        // ✅ BUILD FINAL PAYLOAD EXPLICITLY
+        const payload = {
+            ...formData,
+            status: formData.status,          // IMPORTANT
+            payments: updatedPayments,
+            paid_amount: totalPaid,
+            balance_amount: balanceAmount,
+            payment_status: paymentStatus,
+            history: updatedHistory
+        };
+    
+        // optional UI update
+        setFormData(payload);
+    
+        // ✅ SEND CLEAN DATA
+        onSubmit(payload);
+    
+        setSnackbarOpen(true);
+    };
+    
+    
 
     return (
         <Box>
@@ -224,7 +335,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                         </Grid>
                     </>
                 )}
-                {formData.payment_status !== 'Fully Paid' && <>
+                {formData.status === 'Follow up' && formData.payment_status !== 'Fully Paid' && <>
                     <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <Typography variant='body2'>Enter Amount</Typography>
                         <TextField
@@ -269,13 +380,13 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                     <Typography variant='body2'>Course fee</Typography>
                     <Typography variant='body1'sx={{mt:'5px'}}>{formData.course_fee?.toLocaleString()}</Typography>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                {isUpdateMode && <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <FormControl fullWidth size="small">
                         <Typography variant='body2'>Payment Status</Typography>
                         <Typography variant='body1'>{formData.payment_status}</Typography>
                     </FormControl>
-                </Grid>
-                {formData.payments?.length > 0 && <Grid size={{ xs: 12 }}>
+                </Grid>}
+                {isUpdateMode && formData.payments?.length > 0 && <Grid size={{ xs: 12 }}>
                     <Typography variant="body1" fontWeight={600} sx={{ backgroundColor: '#c4c4c4', padding: 1, marginBottom: 1 }}>Payment History</Typography>
                     <Grid container spacing={2}>
                         {formData.payments.map((item) => {
@@ -298,7 +409,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                         })}
                     </Grid>
                 </Grid>}
-                {formData.history?.length > 0 && <Grid size={{ xs: 12 }}>
+                {isUpdateMode && formData.history?.length > 0 && <Grid size={{ xs: 12 }}>
                     <Typography variant="body1" fontWeight={600} sx={{ backgroundColor: '#c4c4c4', padding: 1, marginBottom: 1 }}>All History</Typography>
                     <Grid container spacing={2}>
                         {formData.history.map((item) => {

@@ -43,34 +43,31 @@ export default function StudentsTable({ records, refreshRecords }) {
             phone: item.phone,
             are_you: item.are_you,
             course: item.course,
+            course_fee: item.course_fee,
             currently_working_in: item.currently_working_in,
             learning_mode: item.learning_mode,
             source: item.source,
             status: item.status,
-            history: item.history,
+            history: item.history || [],
             attender: item.attender,
-            payments: item.payments,
-            payment_status: item.payment_status,
-            balance_amount: item.balance_amount
+            payments: item.payments || [],
+            balance_amount: item.balance_amount || 0,
+            payment_status: item.payment_status || "Unpaid",
         }));
         setStudents(studentRecord);
     }, [records]);
+    
 
-    const handleUpdate = async () => {
+    const handleUpdate = async (finalData) => {
         try {
-            const response = await apiCall('put', `/student/${formData.id}`, formData, null, accessToken)
-            const updatedStudent = response.data
-            setStudents(prevStudents =>
-                prevStudents.map(student =>
-                    student.id === formData.id ? { ...student, ...updatedStudent } : student
-                )
-            );
+            await apiCall('put', `/student/${finalData.id}`, finalData, null, accessToken);
             await refreshRecords();
             setOpenPopup(false);
         } catch (error) {
             console.error("Failed to update student", error.message);
         }
     };
+    
 
     const filteredStudents = students.filter((student) => {
         const search = searchQuery.toLowerCase();
@@ -80,10 +77,11 @@ export default function StudentsTable({ records, refreshRecords }) {
         );
     });
 
+    
     const downloadCSV = () => {
         if (!filteredStudents.length) return;
-
-        const data = filteredStudents.map(({ name, phone, course, are_you, currently_working_in, learning_mode, source, status, attender, payment_status, paid_amount, payment_mode }) => ({
+        
+        const data = filteredStudents.map(({ name, phone, course, are_you, currently_working_in, learning_mode, source, status, attender, payment_status, paid_amount, balance_amount, course_fee }) => ({
             Name: name,
             Phone: phone,
             Course: course,
@@ -93,11 +91,12 @@ export default function StudentsTable({ records, refreshRecords }) {
             Source: source,
             Status: status,
             Attender: attender,
-            PaymentStatus: payment_status,
+            CourseFee: course_fee,
             PaidAmount: paid_amount,
-            PaymentMode: payment_mode,
+            BalanceAmount: status === "Loss" ? "" : balance_amount,
+            PaymentStatus: status === "Loss" ? "" : payment_status,
         }));
-
+        
         const csv = Papa.unparse(data);
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

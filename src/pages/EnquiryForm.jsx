@@ -19,7 +19,7 @@ const VisuallyHiddenInput = styled('input')({
   });
 
 const EnquiryForm = () => {
-    const [formData, setFormData] = useState({name: '', phone: '', course: '', are_you: '', currently_working_in: '', learning_mode: '', source: '', status: '', attender: ''});
+    const [formData, setFormData] = useState({name: '', phone: '', course: '', are_you: '', currently_working_in: '', learning_mode: '', source: '', status: '', attender: '', follow_up_date: '', note: '', amount: 0, balance_amount: 0, course_fee: 0, payment_status: ''});
     const token = useSelector((state) => state.user.accessToken);
 
     const handleCSVUpload = (event) => {
@@ -44,22 +44,37 @@ const EnquiryForm = () => {
         });
     };
 
-    const handleCreateStudent = async () => {
-        try {
+    const handleCreateStudent = async (finalData) => {
+      try {
           const payload = {
-            ...formData,
-            are_you: formData.are_you === "Experience" ? "Experienced" : "Fresher"
+              ...finalData,
+              are_you: finalData.are_you === "Experience" ? "Experienced" : "Fresher"
           };
+  
           await apiCall('post', '/create-student', payload, null, token);
+  
           setFormData({
-            name: '', phone: '', course: '', are_you: '', currently_working_in: '',
-            learning_mode: '', source: '', status: '', attender: ''
+              name: '',
+              phone: '',
+              course: '',
+              are_you: '',
+              currently_working_in: '',
+              learning_mode: '',
+              source: '',
+              status: '',
+              attender: '',
+              payments: [],
+              course_fee: 0,
+              paid_amount: 0,
+              balance_amount: 0,
+              payment_status: 'Unpaid'
           });
-        } catch (err) {
+  
+      } catch (err) {
           console.error("Create student error", err.message);
-        }
-      };
-
+      }
+  };
+  
     return <>
         <Box sx={{ padding: 2 }}>
             <Typography variant="h6">Upload CSV</Typography>

@@ -19,9 +19,6 @@ const columns = [
         align: 'left',
         headerAlign: 'left'
     },
-    { field: 'are_you', headerName: 'Experience', width: 160 },
-    { field: 'currently_working_in', headerName: 'Working In', width: 160 },
-    { field: 'learning_mode', headerName: 'Learning Mode', width: 160 },
     { field: 'source', headerName: 'Source', width: 160 },
     { field: 'status', headerName: 'Status', width: 160 },
     { field: 'attender', headerName: 'Attender', width: 160 },
@@ -41,11 +38,8 @@ export default function StudentsTable({ records, refreshRecords }) {
             id: item._id,
             name: item.name,
             phone: item.phone,
-            are_you: item.are_you,
             course: item.course,
             course_fee: item.course_fee,
-            currently_working_in: item.currently_working_in,
-            learning_mode: item.learning_mode,
             source: item.source,
             status: item.status,
             history: item.history || [],
@@ -81,13 +75,10 @@ export default function StudentsTable({ records, refreshRecords }) {
     const downloadCSV = () => {
         if (!filteredStudents.length) return;
         
-        const data = filteredStudents.map(({ name, phone, course, are_you, currently_working_in, learning_mode, source, status, attender, payment_status, paid_amount, balance_amount, course_fee }) => ({
+        const data = filteredStudents.map(({ name, phone, course, source, status, attender, payment_status, paid_amount, balance_amount, course_fee }) => ({
             Name: name,
             Phone: phone,
             Course: course,
-            Experience: are_you,
-            WorkingIn: currently_working_in,
-            LearningMode: learning_mode,
             Source: source,
             Status: status,
             Attender: attender,

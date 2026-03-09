@@ -67,9 +67,6 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
             newErrors.phone = "Phone must be 10 digits";
         }
         if (!formData.course) newErrors.course = "Course is required";
-        if (!formData.are_you) newErrors.are_you = "This field is required";
-        if (!formData.currently_working_in) newErrors.currently_working_in = "This field is required";
-        if (!formData.learning_mode) newErrors.learning_mode = "Learning mode is required";
         if (!formData.source) newErrors.source = "Source is required";
         if (!formData.status) newErrors.status = "Status is required";
         if (!formData.attender) newErrors.attender = "Attender is required";
@@ -104,46 +101,6 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         }));
     }, [formData.payments]);
     
-
-    // const handleFormSubmit = () => {
-    //     if (!validateForm()) return;
-    
-    //     let updatedPayments = [...(formData.payments || [])];
-    //     let totalPaid = formData.paid_amount || 0;
-    
-    //     const newPayment = processPaymentOnCreate();
-    
-    //     if (newPayment) {
-    //         updatedPayments.push(newPayment);
-    //         totalPaid += newPayment.paid_amount;
-    //     }
-    
-    //     const courseFee = Number(formData.course_fee || 0);
-    //     const balanceAmount = courseFee - totalPaid;
-    
-    //     let paymentStatus = "Unpaid";
-    //     if (totalPaid > 0 && balanceAmount > 0) paymentStatus = "Partially Paid";
-    //     if (balanceAmount <= 0) paymentStatus = "Fully Paid";
-    
-    //     setFormData(prev => ({
-    //         ...prev,
-    //         payments: updatedPayments,
-    //         paid_amount: totalPaid,
-    //         balance_amount: balanceAmount,
-    //         payment_status: paymentStatus
-    //     }));
-    
-    //     onSubmit({
-    //         ...formData,
-    //         payments: updatedPayments,
-    //         paid_amount: totalPaid,
-    //         balance_amount: balanceAmount,
-    //         payment_status: paymentStatus
-    //     });
-    
-    //     setSnackbarOpen(true);
-    // };  
-    
     const handleFormSubmit = () => {
         if (!validateForm()) return;
     
@@ -167,20 +124,32 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         // ✅ NEW history entry (USES CURRENT VALUES)
         const newHistory = {
             status: formData.status,
-            note: formData.note,
+            note: formData.note || "Lead created",
             attender: formData.attender,
             updated_at: new Date().toISOString()
         };
     
-        const updatedHistory = [
-            ...(formData.history || []),
-            newHistory
-        ];
+        const updatedHistory = [...(formData.history || [])];
     
+        if (!isUpdateMode && updatedHistory.length === 0) {
+            updatedHistory.push(newHistory);
+        }
+
+        if (isUpdateMode) {
+    const lastHistory = updatedHistory[updatedHistory.length - 1];
+
+    if (
+        !lastHistory ||
+        lastHistory.status !== formData.status ||
+        lastHistory.attender !== formData.attender ||
+        lastHistory.note !== formData.note
+    ) {
+        updatedHistory.push(newHistory);
+    }
+}
         // ✅ BUILD FINAL PAYLOAD EXPLICITLY
         const payload = {
             ...formData,
-            status: formData.status,          // IMPORTANT
             payments: updatedPayments,
             paid_amount: totalPaid,
             balance_amount: balanceAmount,
@@ -215,42 +184,30 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                     </Box>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Box>
+                        <Typography variant='body2'>City</Typography>
+                        <TextField fullWidth type="text" size="small" variant="outlined" name="city" disabled={isUser} value={formData.city} onChange={handleInputChange} error={!!errors.city} helperText={errors.city} />
+                    </Box>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Box>
+                        <Typography variant='body2'>Learning Mode</Typography>
+                        <TextField fullWidth size="small" variant="outlined" name="learning_mode" disabled={isUser} value={formData.learning_mode} onChange={handleInputChange} error={!!errors.learning_mode} helperText={errors.learning_mode} />
+                    </Box>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Box>
+                        <Typography variant='body2'>Qualification</Typography>
+                        <TextField fullWidth size="small" variant="outlined" name="qualification" disabled={isUser} value={formData.qualification} onChange={handleInputChange} error={!!errors.qualification} helperText={errors.qualification} />
+                    </Box>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <FormControl fullWidth size="small" error={!!errors.course} disabled={isUser}>
                         <Typography variant='body2'>Course</Typography>
                         <Select fullWidth size="small" name="course" value={formData.course} onChange={handleInputChange}>
                             {courses.map((item) => <MenuItem value={item.title} key={item._id}>{item.title}</MenuItem>)}
                         </Select>
                         {errors.course && <FormHelperText>{errors.course}</FormHelperText>}
-                    </FormControl>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <FormControl fullWidth size="small" error={!!errors.are_you} disabled={isUser}>
-                        <Typography variant='body2'>Are you</Typography>
-                        <Select fullWidth size="small" name="are_you" value={formData.are_you} onChange={handleInputChange}>
-                            <MenuItem value="Fresher">Fresher</MenuItem>
-                            <MenuItem value="Experienced">Experienced</MenuItem>
-                        </Select>
-                        {errors.are_you && <FormHelperText>{errors.are_you}</FormHelperText>}
-                    </FormControl>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <FormControl fullWidth size="small" error={!!errors.currently_working_in} disabled={isUser}>
-                        <Typography variant='body2'>Currently working in</Typography>
-                        <Select fullWidth size="small" name="currently_working_in" value={formData.currently_working_in} onChange={handleInputChange}>
-                            <MenuItem value="IT">IT</MenuItem>
-                            <MenuItem value="Non IT">Non IT</MenuItem>
-                        </Select>
-                        {errors.currently_working_in && <FormHelperText>{errors.currently_working_in}</FormHelperText>}
-                    </FormControl>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <FormControl fullWidth size="small" error={!!errors.learning_mode} disabled={isUser}>
-                        <Typography variant='body2'>Learning mode</Typography>
-                        <Select fullWidth size="small" name="learning_mode" value={formData.learning_mode} onChange={handleInputChange}>
-                            <MenuItem value="Online">Online</MenuItem>
-                            <MenuItem value="Offline">Offline</MenuItem>
-                        </Select>
-                        {errors.learning_mode && <FormHelperText>{errors.learning_mode}</FormHelperText>}
                     </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -363,7 +320,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                         </FormControl>
                     </Grid></>}
 
-                {formData.payment_status === 'Partially Paid' && (<>
+                {formData.payment_status !== 'Unpaid' && (<>
                     <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <Typography variant='body2'>Paid Amount</Typography>
                         <Typography variant='body1' sx={{mt:'5px'}}>{formData.paid_amount?.toLocaleString() || 0}</Typography>
@@ -371,7 +328,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                     <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <FormControl fullWidth size="small">
                             <Typography variant='body2'>Balance amount</Typography>
-                            <Typography variant='body1' sx={{mt:'5px'}}>{formData.balance_amount?.toLocaleString()}</Typography>
+                            <Typography variant='body1' sx={{mt:'5px'}}>{formData.balance_amount?.toLocaleString() || 0}</Typography>
                         </FormControl>
                     </Grid>
                 </>

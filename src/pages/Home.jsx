@@ -15,6 +15,7 @@ import { apiCall } from '../utils/axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCourses } from '../features/courses';
 import { fetchMembers } from '../features/members';
+import { socket } from '../utils/socket';
 
 const Home = () => {
 
@@ -126,6 +127,18 @@ const Home = () => {
         dispatch(fetchCourses())
         dispatch(fetchMembers())
     }, [])
+
+    useEffect(() => {
+
+    socket.on("new-enquiry", () => {
+        fetchEnquiries();
+    });
+
+    return () => {
+        socket.off("new-enquiry");
+    };
+
+    }, []);
 
     return <>
         <Box sx={{ padding: 2 }}>

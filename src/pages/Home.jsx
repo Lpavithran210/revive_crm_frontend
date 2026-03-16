@@ -45,8 +45,8 @@ const Home = () => {
 
     const fetchEnquiries = async () => {
         try {
-            const startFormatted = startDate.startOf('day').toISOString();
-            const endFormatted = endDate.endOf('day').toISOString();
+            const startFormatted = startDate.startOf('day').format("YYYY-MM-DDTHH:mm:ss");
+            const endFormatted = endDate.endOf('day').format("YYYY-MM-DDTHH:mm:ss");
             const response = await apiCall('get', '/enquiries', null, {
                 startDate: startFormatted,
                 endDate: endFormatted,

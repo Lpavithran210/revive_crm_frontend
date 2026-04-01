@@ -130,15 +130,18 @@ const Home = () => {
 
     useEffect(() => {
 
-    socket.on("new-enquiry", () => {
+    const handleNewEnquiry = (student) => {
+        setData(prev => [student, ...prev]);
         fetchEnquiries();
-    });
-
-    return () => {
-        socket.off("new-enquiry");
     };
 
-    }, []);
+    socket.on("new-enquiry", handleNewEnquiry);
+
+    return () => {
+        socket.off("new-enquiry", handleNewEnquiry);
+    };
+
+}, [startDate, endDate, accessToken]);
 
     return <>
         <Box sx={{ padding: 2 }}>

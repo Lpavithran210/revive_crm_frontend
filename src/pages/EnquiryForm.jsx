@@ -29,7 +29,7 @@ const EnquiryForm = () => {
     
    const formatCourseTitle = (text) => {
         if (!text) return null;
-        return text.toLowerCase().replace(/_+/g, " ").trim().split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+        return text.toLowerCase().replace(/_+/g, " ").replace(/\bcampaign\b/g, "").trim().split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
     };
     
     const cleanPhoneNumber = (phone) => {

@@ -128,43 +128,20 @@ const Home = () => {
         dispatch(fetchMembers())
     }, [])
 
-    useEffect(() => {
+  useEffect(() => {
 
-        const handleNewEnquiry = (student) => {
-            setData(prev => {
-                const updated = [student, ...prev];
+    const handleNewEnquiry = (student) => {
+        console.log("RECEIVED:", student);
+        setData(prev => [student, ...prev]);
+    };
 
-                // Recalculate everything here 👇
-                const totalPaidAmount = updated.reduce((total, item) => {
-                    const paymentTotal = item.payments?.reduce((sum, payment) => sum + (payment.paid_amount || 0), 0) || 0;
-                    return total + paymentTotal;
-                }, 0);
+    socket.on("new-enquiry", handleNewEnquiry);
 
-                setTotalPaid(totalPaidAmount);
+    return () => {
+        socket.off("new-enquiry", handleNewEnquiry);
+    };
 
-                const countsByStatus = updated.reduce((acc, item) => {
-                    acc[item.status] = (acc[item.status] || 0) + 1;
-                    return acc;
-                }, {});
-                setStatusCounts(countsByStatus);
-
-                const countsBySource = updated.reduce((acc, item) => {
-                    acc[item.source] = (acc[item.source] || 0) + 1;
-                    return acc;
-                }, {});
-                setSourceCounts(countsBySource);
-
-                return updated;
-            });
-        };
-
-        socket.on("new-enquiry", handleNewEnquiry);
-
-        return () => {
-            socket.off("new-enquiry", handleNewEnquiry);
-        };
-
-    }, [startDate, endDate, accessToken]);
+}, []);
 
     return <>
         <Box sx={{ padding: 2 }}>

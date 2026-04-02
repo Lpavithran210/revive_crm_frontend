@@ -191,12 +191,6 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Box>
-                        <Typography variant='body2'>Learning Mode</Typography>
-                        <TextField fullWidth size="small" variant="outlined" name="learning_mode" disabled={isUser} value={formData.learning_mode} onChange={handleInputChange} error={!!errors.learning_mode} helperText={errors.learning_mode} />
-                    </Box>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <Box>
                         <Typography variant='body2'>Qualification</Typography>
                         <TextField fullWidth size="small" variant="outlined" name="qualification" disabled={isUser} value={formData.qualification} onChange={handleInputChange} error={!!errors.qualification} helperText={errors.qualification} />
                     </Box>

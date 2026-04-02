@@ -23,7 +23,6 @@ const columns = [
     { field: 'status', headerName: 'Status', width: 160 },
     { field: 'attender', headerName: 'Attender', width: 160 },
     { field: 'city', headerName: 'City', width: 150 },
-    { field: 'learning_mode', headerName: 'Learning Mode', width: 170 },
     { field: 'qualification', headerName: 'Qualification', width: 180 },
 ];
 
@@ -51,7 +50,6 @@ export default function StudentsTable({ records, refreshRecords }) {
             balance_amount: item.balance_amount || 0,
             payment_status: item.payment_status || "Unpaid",
             city: item.city,
-            learning_mode: item.learning_mode,
             qualification: item.qualification,
         }));
         setStudents(studentRecord);
@@ -81,7 +79,7 @@ export default function StudentsTable({ records, refreshRecords }) {
     const downloadCSV = () => {
         if (!filteredStudents.length) return;
         
-        const data = filteredStudents.map(({ name, phone, course, source, status, attender, payment_status, paid_amount, balance_amount, course_fee, city, learning_mode, qualification }) => ({
+        const data = filteredStudents.map(({ name, phone, course, source, status, attender, payment_status, paid_amount, balance_amount, course_fee, city, qualification }) => ({
             Name: name,
             Phone: phone,
             Course: course,
@@ -93,7 +91,6 @@ export default function StudentsTable({ records, refreshRecords }) {
             BalanceAmount: status === "Loss" ? "" : balance_amount,
             PaymentStatus: status === "Loss" ? "" : payment_status,
             City: city,
-            LearningMode: learning_mode,
             Qualification: qualification,
         }));
         

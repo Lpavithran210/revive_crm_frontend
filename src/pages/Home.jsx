@@ -143,6 +143,26 @@ const Home = () => {
 
 }, []);
 
+useEffect(() => {
+
+  const handleReminder = (data) => {
+    console.log("REMINDER RECEIVED", data);
+
+    alert(`Follow-up Reminder
+Student: ${data.name}
+Phone: ${data.phone}
+Course: ${data.course}
+Attender: ${data.attender}`);
+  };
+
+  socket.on("followupReminder", handleReminder);
+
+  return () => {
+    socket.off("followupReminder", handleReminder);
+  };
+
+}, []);
+
     return <>
         <Box sx={{ padding: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between', gap: 3, margin: '10px 0 30px 0' }}>

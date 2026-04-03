@@ -74,7 +74,7 @@ const EnquiryForm = () => {
                     };
                 }).filter(student => student.phone);
                 try {
-                    await apiCall('post', '/upload-students', JSON.stringify({ students }), null, token);
+                    await apiCall('post', '/api/upload-students', JSON.stringify({ students }), null, token);
                     setSnackbar({ open: true, message: "Students uploaded successfully", severity: "success" });
                 } catch (e) {
                     console.log('Upload error', e.message);
@@ -90,7 +90,7 @@ const EnquiryForm = () => {
 
     const handleCreateStudent = async (finalData) => {
         try {
-            await apiCall('post', '/create-student', finalData, null, token);
+            await apiCall('post', '/api/create-student', finalData, null, token);
 
             setFormData({
                 name: '',

@@ -21,7 +21,7 @@ const ForgotPassword = () => {
             return setSnackbar({ open: true, type: 'error', message: 'Invalid email format' })
         }
         try {
-            await apiCall('post', "/user/forgotpassword", { email })
+            await apiCall('post', "/api/user/forgotpassword", { email })
             navigate('/verify_otp', { state: email })
         }
         catch (e) {

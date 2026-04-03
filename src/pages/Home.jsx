@@ -47,7 +47,7 @@ const Home = () => {
         try {
             const startFormatted = startDate.startOf('day').format("YYYY-MM-DDTHH:mm:ss");
             const endFormatted = endDate.endOf('day').format("YYYY-MM-DDTHH:mm:ss");
-            const response = await apiCall('get', '/enquiries', null, {
+            const response = await apiCall('get', '/api/enquiries', null, {
                 startDate: startFormatted,
                 endDate: endFormatted,
             }, accessToken);

@@ -66,7 +66,7 @@ const Users = () => {
 
     const addUser = async () => {
         try {
-            const res = await apiCall('post', '/user/add_user', { ...state }, null, accessToken)
+            const res = await apiCall('post', '/api/user/add_user', { ...state }, null, accessToken)
             setState(initialFormState);
             setErrors({});
             setSnackbarOpen({ open: true, type: 'success', message: res.message });
@@ -85,7 +85,7 @@ const Users = () => {
 
     const handleDelete = async (id) => {
         try {
-            const res = await apiCall('delete', `/user/${id}`, null, null, accessToken)
+            const res = await apiCall('delete', `/api/user/${id}`, null, null, accessToken)
             setOpen(false)
             setSnackbarOpen({ open: true, type: 'success', message: res.message });
             dispatch(fetchMembers());

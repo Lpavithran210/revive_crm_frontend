@@ -44,7 +44,7 @@ const Course = () => {
 
     const addCourse = async () => {
         try {
-            const res = await apiCall('post', '/course/add_course', course, null, accessToken);
+            const res = await apiCall('post', '/api/course/add_course', course, null, accessToken);
             setCourse(initialFormState);
             setErrors({});
             setSnackbarOpen({ open: true, type: 'success', message: res.message });
@@ -57,7 +57,7 @@ const Course = () => {
 
     const handleDelete = async (id) => {
         try {
-            const res = await apiCall('delete', `/course/${id}`, null, null, accessToken);
+            const res = await apiCall('delete', `/api/course/${id}`, null, null, accessToken);
             setOpen(false);
             setSnackbarOpen({ open: true, type: 'success', message: res.message });
             dispatch(fetchCourses());

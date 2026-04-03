@@ -4,10 +4,10 @@ const initialState = {
     allCourses: [] 
 }
 
-export const fetchCourses = createAsyncThunk('/courses', async (_, thunkAPI) => {
+export const fetchCourses = createAsyncThunk('/api/courses', async (_, thunkAPI) => {
     const state = thunkAPI.getState();
     const accessToken = state.user.accessToken; 
-    const res = await apiCall('get', '/course', null, null, accessToken)
+    const res = await apiCall('get', '/api/course', null, null, accessToken)
     return res.data
 }) 
 

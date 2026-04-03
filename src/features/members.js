@@ -5,10 +5,10 @@ const initialState = {
     members: []
 }
 
-export const fetchMembers = createAsyncThunk('/members', async (_, thunkAPI) => {
+export const fetchMembers = createAsyncThunk('/api/user/members', async (_, thunkAPI) => {
     const state = thunkAPI.getState();
     const accessToken = state.user.accessToken;
-    const res = await apiCall('get', '/user/members', null, null, accessToken)
+    const res = await apiCall('get', '/api/user/members', null, null, accessToken)
     return res.data
 })
 

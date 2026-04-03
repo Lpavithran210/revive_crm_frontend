@@ -58,7 +58,7 @@ export default function StudentsTable({ records, refreshRecords }) {
 
     const handleUpdate = async (finalData) => {
         try {
-            await apiCall('put', `/student/${finalData.id}`, finalData, null, accessToken);
+            await apiCall('put', `/api/student/${finalData.id}`, finalData, null, accessToken);
             await refreshRecords();
             setOpenPopup(false);
         } catch (error) {

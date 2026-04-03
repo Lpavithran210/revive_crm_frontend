@@ -36,7 +36,7 @@ const Login = () => {
             return setSnackbar({open: true, type: 'error', message: 'Password must contain 8 chars and must contain 1 number, 1 special character, 1 uppercase and 1 lowercase letter'});
         }
         try {
-            const resultAction = await apiCall('post', '/user/signin', { email, password })
+            const resultAction = await apiCall('post', '/api/user/signin', { email, password })
             if (resultAction?.data?.accessToken) {
                 dispatch(login(resultAction.data))
             } else {

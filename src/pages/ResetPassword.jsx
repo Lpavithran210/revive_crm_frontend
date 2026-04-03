@@ -30,7 +30,7 @@ const ResetPassword = () => {
         }
         else {
             try {
-                await apiCall('post', '/user/reset_password', {email, password});
+                await apiCall('post', '/api/user/reset_password', {email, password});
                 setSnackbar({ open: true, type: 'success', message: "Password changed successfully" });
                 navigate('/')
             } catch (error) {

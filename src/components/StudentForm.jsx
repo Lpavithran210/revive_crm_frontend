@@ -126,6 +126,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
             status: formData.status,
             note: formData.note || "Lead created",
             attender: formData.attender,
+            course: formData.course,
             updated_at: new Date().toISOString()
         };
     
@@ -364,6 +365,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                     <Typography variant="body1" fontWeight={600} sx={{ backgroundColor: '#c4c4c4', padding: 1, marginBottom: 1 }}>All History</Typography>
                     <Grid container spacing={2}>
                         {formData.history.map((item) => {
+                            console.log(item);
                             return (
                                 <>
                                     <Grid size={{ xs: 12, sm: 3 }}>

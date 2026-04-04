@@ -190,21 +190,6 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                     </Box>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <Box>
-                        <Typography variant='body2'>Qualification</Typography>
-                        <TextField fullWidth size="small" variant="outlined" name="qualification" disabled={isUser} value={formData.qualification} onChange={handleInputChange} error={!!errors.qualification} helperText={errors.qualification} />
-                    </Box>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <FormControl fullWidth size="small" error={!!errors.course} disabled={isUser}>
-                        <Typography variant='body2'>Course</Typography>
-                        <Select fullWidth size="small" name="course" value={formData.course} onChange={handleInputChange}>
-                            {courses.map((item) => <MenuItem value={item.title} key={item._id}>{item.title}</MenuItem>)}
-                        </Select>
-                        {errors.course && <FormHelperText>{errors.course}</FormHelperText>}
-                    </FormControl>
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <FormControl fullWidth size="small" error={!!errors.source} disabled={isUser}>
                         <Typography variant='body2'>Source</Typography>
                         <Select fullWidth size="small" name="source" disabled={isUser} value={formData.source} onChange={handleInputChange} error={!!errors.source} helperText={errors.source}>
@@ -215,6 +200,21 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                             <MenuItem value="Direct">Direct</MenuItem>
                         </Select>
                         {errors.source && <FormHelperText>{errors.source}</FormHelperText>}
+                    </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Box>
+                        <Typography variant='body2'>Qualification</Typography>
+                        <TextField fullWidth size="small" variant="outlined" name="qualification" value={formData.qualification} onChange={handleInputChange} error={!!errors.qualification} helperText={errors.qualification} />
+                    </Box>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <FormControl fullWidth size="small" error={!!errors.course}>
+                        <Typography variant='body2'>Course</Typography>
+                        <Select fullWidth size="small" name="course" value={formData.course} onChange={handleInputChange}>
+                            {courses.map((item) => <MenuItem value={item.title} key={item._id}>{item.title}</MenuItem>)}
+                        </Select>
+                        {errors.course && <FormHelperText>{errors.course}</FormHelperText>}
                     </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>

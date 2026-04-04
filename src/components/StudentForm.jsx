@@ -6,6 +6,14 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
+export const dateFormat = (date) => {
+        return new Date(date).toLocaleString("en-IN", {
+            dateStyle: "medium",
+            timeStyle: "short",
+            timeZone: "Asia/Kolkata",
+        })
+    }
+
 const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMode = false }) => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [errors, setErrors] = useState({})
@@ -48,14 +56,6 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
 
     const { role } = useSelector((state) => state.user);
     const isUser = role === 'user';
-
-    const dateFormat = (date) => {
-        return new Date(date).toLocaleString("en-IN", {
-            dateStyle: "medium",
-            timeStyle: "short",
-            timeZone: "Asia/Kolkata",
-        })
-    }
 
     const validateForm = () => {
         const newErrors = {};

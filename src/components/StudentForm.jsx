@@ -372,13 +372,17 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                                         <Typography variant="body2" fontWeight={600}>Date</Typography>
                                         <Typography variant="body2" color="textSecondary">{dateFormat(item.updated_at)}</Typography>
                                     </Grid>
-                                    <Grid size={{ xs: 12, sm: 3 }}>
+                                    <Grid size={{ xs: 12, sm: 2 }}>
                                         <Typography variant="body2" fontWeight={600}>Attender</Typography>
                                         <Typography variant="body1">{item.attender}</Typography>
                                     </Grid>
-                                    <Grid size={{ xs: 12, sm: 3 }}>
+                                    <Grid size={{ xs: 12, sm: 2 }}>
                                         <Typography variant="body2" fontWeight={600}>Status</Typography>
                                         <Typography variant="body1">{item.status}</Typography>
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 2 }}>
+                                        <Typography variant="body2" fontWeight={600}>Course</Typography>
+                                        <Typography variant="body1">{item.course}</Typography>
                                     </Grid>
                                     <Grid size={{ xs: 12, sm: 3 }}>
                                         <Typography variant="body2" fontWeight={600}>Note</Typography>

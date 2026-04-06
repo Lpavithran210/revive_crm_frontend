@@ -363,7 +363,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 {isUpdateMode && formData.history?.length > 0 && <Grid size={{ xs: 12 }}>
                     <Typography variant="body1" fontWeight={600} sx={{ backgroundColor: '#c4c4c4', padding: 1, marginBottom: 1 }}>All History</Typography>
                         {formData.history.map((item,index) => (
-                            <Box key={index}>
+                            <Box key={index} sx={{pb: 2}}>
                                 <Grid container spacing={2}>
                                     <Grid size={{ xs: 12, sm: 3 }}>
                                         <Typography variant="body2" fontWeight={600}>Date</Typography>

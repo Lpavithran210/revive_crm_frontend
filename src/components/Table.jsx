@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
 import { Box, Button, Dialog, DialogContent, DialogTitle, InputAdornment, TextField, Typography } from '@mui/material';
-import StudentForm from './StudentForm';
+import StudentForm, { dateFormat } from './StudentForm';
 import SearchIcon from '@mui/icons-material/Search';
 import { apiCall } from '../utils/axios';
 import Papa from 'papaparse';
@@ -24,6 +24,7 @@ const columns = [
     { field: 'attender', headerName: 'Attender', width: 160 },
     { field: 'city', headerName: 'City', width: 150 },
     { field: 'qualification', headerName: 'Qualification', width: 180 },
+    { field: 'createdAt', headerName: 'Created At', width: 200 },
 ];
 
 const paginationModel = { page: 0, pageSize: 5 };
@@ -51,6 +52,7 @@ export default function StudentsTable({ records, refreshRecords }) {
             payment_status: item.payment_status || "Unpaid",
             city: item.city,
             qualification: item.qualification,
+            createdAt: dateFormat(item.createdAt),
         }));
         setStudents(studentRecord);
     }, [records]);

@@ -362,11 +362,9 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 </Grid>}
                 {isUpdateMode && formData.history?.length > 0 && <Grid size={{ xs: 12 }}>
                     <Typography variant="body1" fontWeight={600} sx={{ backgroundColor: '#c4c4c4', padding: 1, marginBottom: 1 }}>All History</Typography>
-                    <Grid container spacing={2}>
-                        {formData.history.map((item) => {
-                            console.log(item);
-                            return (
-                                <>
+                        {formData.history.map((item,index) => (
+                            <Box key={index}>
+                                <Grid container spacing={2}>
                                     <Grid size={{ xs: 12, sm: 3 }}>
                                         <Typography variant="body2" fontWeight={600}>Date</Typography>
                                         <Typography variant="body2" color="textSecondary">{dateFormat(item.updated_at)}</Typography>
@@ -387,10 +385,12 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                                         <Typography variant="body2" fontWeight={600}>Note</Typography>
                                         <Typography variant="body1">{item.note}</Typography>
                                     </Grid>
-                                </>
-                            );
-                        })}
-                    </Grid>
+                                </Grid>
+                                {index !== formData.history.length - 1 && (
+                                    <Divider sx={{ display: { xs: 'block', sm: 'none' }, my: 2 }} />
+                                )}
+                            </Box>
+                        ))}
                 </Grid>}
             </Grid>
             <Box sx={{display: 'flex', justifyContent: 'end', gap: 2}}>

@@ -64,28 +64,30 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
   // 🔥 SOCKET LISTENER
   useEffect(() => {
-    const handleReminder = (data) => {
+  const handleReminder = (data) => {
 
-      setNotifications(prev => {
-        const updated = [data, ...prev].slice(0, 15);
-        localStorage.setItem("notifications", JSON.stringify(updated));
-        return updated;
-      });
+    // 📦 Store notifications
+    setNotifications(prev => {
+      const updated = [data, ...prev].slice(0, 15);
+      localStorage.setItem("notifications", JSON.stringify(updated));
+      return updated;
+    });
 
-      setUnreadCount(prev => {
-        const count = prev + 1;
-        localStorage.setItem("unreadCount", count);
-        return count;
-      });
+    // 🔴 Unread count
+    setUnreadCount(prev => {
+      const count = prev + 1;
+      localStorage.setItem("unreadCount", count);
+      return count;
+    });
 
-    };
+  };
 
-    socket.on("followupReminder", handleReminder);
+  socket.on("followupReminder", handleReminder);
 
-    return () => {
-      socket.off("followupReminder", handleReminder);
-    };
-  }, []);
+  return () => {
+    socket.off("followupReminder", handleReminder);
+  };
+}, []);
 
   // 🔥 CLOSE ON OUTSIDE CLICK
   useEffect(() => {
@@ -207,6 +209,9 @@ const ProtectedRoute = ({ allowedRoles }) => {
                     </Box>
                     <Typography variant="body2" sx={{ pt:1 }}>
                       {n.note}
+                    </Typography>
+                    <Typography variant="body2" sx={{ pt:1 }}>
+                      {n.attender}
                     </Typography>
                     <Typography variant="caption" sx={{ pt:1, display: 'block', textAlign: 'right' }}>
                       {dateFormat(n.followupTime)}

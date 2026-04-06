@@ -8,7 +8,8 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Alert, Box, Button, Grow, IconButton, InputAdornment, Snackbar, TextField, Typography } from "@mui/material";
 import KeyIcon from '@mui/icons-material/Key';
 import MailIcon from '@mui/icons-material/Mail';
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
+import { socket } from "../utils/socket";
 
 const Login = () => {
     const dispatch = useDispatch();
@@ -38,9 +39,8 @@ const Login = () => {
         }
         try {
             const resultAction = await apiCall('post', '/api/user/signin', { email, password })
-            if (resultAction?.data?.accessToken) {
-                const token = resultAction.data.accessToken;
-
+            const token = resultAction?.data?.accessToken;
+            if (token) {
                 localStorage.setItem("token", token);
 
                 dispatch(login(resultAction.data));
@@ -51,7 +51,7 @@ const Login = () => {
                         socket.emit("registerUser", decoded.id);
                     }
                 } catch (err) {
-                    console.log("Token decode failed");
+                    console.log("Token decode failed",err);
                 }
             } else {
                 return setSnackbar({ open: true, type: 'error', message: 'User not exists!' });

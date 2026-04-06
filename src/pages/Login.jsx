@@ -39,7 +39,8 @@ const Login = () => {
             const resultAction = await apiCall('post', '/api/user/signin', { email, password })
             if (resultAction?.data?.accessToken) {
                 dispatch(login(resultAction.data))
-                socket.emit("registerUser", user._id); 
+                const token = resultAction.data.accessToken;
+                localStorage.setItem("token", token);
             } else {
                 return setSnackbar({open: true, type: 'error', message: 'User not exists!'});
             }

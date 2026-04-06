@@ -1,8 +1,10 @@
 import { Box } from '@mui/material'
 import './App.css'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import ErrorPage from './pages/404'
+import { jwtDecode } from "jwt-decode";
+import { socket } from './utils/socket'
 
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
@@ -23,6 +25,28 @@ const Course = lazy(() => import('./pages/Course'))
 // const BlogDetails = lazy(() => import('./pages/blogs/BlogDetails'))
 
 function App() {
+  useEffect(() => {
+
+    const registerUser = () => {
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          socket.emit("registerUser", decoded.id);
+        } catch (err) {
+          console.log("Invalid token");
+        }
+      }
+    };
+
+    registerUser();
+    socket.on("connect", registerUser);
+    return () => {
+      socket.off("connect", registerUser);
+    };
+  }, []);
+  
   return (
     <BrowserRouter>
       <Suspense fallback={<Box sx={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><img src='./revivelogo.png' width={100} /></Box>}>

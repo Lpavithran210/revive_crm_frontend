@@ -66,20 +66,24 @@ const ProtectedRoute = ({ allowedRoles }) => {
   useEffect(() => {
   const handleReminder = (data) => {
 
-    // 📦 Store notifications
-    setNotifications(prev => {
+     setNotifications(prev => {
+      const exists = prev.some(n =>
+        n.phone === data.phone &&
+        n.followupTime === data.followupTime
+      );
+
+      if (exists) return prev;
+
       const updated = [data, ...prev].slice(0, 15);
       localStorage.setItem("notifications", JSON.stringify(updated));
       return updated;
     });
 
-    // 🔴 Unread count
     setUnreadCount(prev => {
       const count = prev + 1;
       localStorage.setItem("unreadCount", count);
       return count;
     });
-
   };
 
   socket.on("followupReminder", handleReminder);

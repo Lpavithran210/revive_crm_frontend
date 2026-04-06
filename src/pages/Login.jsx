@@ -23,33 +23,44 @@ const Login = () => {
     const handleSubmit = async () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        
-        setSnackbar({open: false, type: '', message: ''});
+
+        setSnackbar({ open: false, type: '', message: '' });
 
         if (!email || !password) {
-            return setSnackbar({open: true, type: 'error', message: 'Please enter all the mandatory fields!'});
+            return setSnackbar({ open: true, type: 'error', message: 'Please enter all the mandatory fields!' });
         }
         if (!emailRegex.test(email)) {
-            return setSnackbar({open: true, type: 'error', message: 'Invalid email format'});
+            return setSnackbar({ open: true, type: 'error', message: 'Invalid email format' });
         }
         if (!passwordRegex.test(password)) {
-            return setSnackbar({open: true, type: 'error', message: 'Password must contain 8 chars and must contain 1 number, 1 special character, 1 uppercase and 1 lowercase letter'});
+            return setSnackbar({ open: true, type: 'error', message: 'Password must contain 8 chars and must contain 1 number, 1 special character, 1 uppercase and 1 lowercase letter' });
         }
         try {
             const resultAction = await apiCall('post', '/api/user/signin', { email, password })
             if (resultAction?.data?.accessToken) {
-                dispatch(login(resultAction.data))
                 const token = resultAction.data.accessToken;
+
                 localStorage.setItem("token", token);
+
+                dispatch(login(resultAction.data));
+
+                try {
+                    const decoded = jwtDecode(token);
+                    if (decoded?.id) {
+                        socket.emit("registerUser", decoded.id);
+                    }
+                } catch (err) {
+                    console.log("Token decode failed");
+                }
             } else {
-                return setSnackbar({open: true, type: 'error', message: 'User not exists!'});
+                return setSnackbar({ open: true, type: 'error', message: 'User not exists!' });
             }
         } catch (e) {
             console.log(e, 'login error')
-            if(e.response.status === 429){
-                return setSnackbar({open: true, type: 'error', message: e.response.data});
+            if (e.response.status === 429) {
+                return setSnackbar({ open: true, type: 'error', message: e.response.data });
             }
-            setSnackbar({open: true, type: 'error', message: e.response.data.message});
+            setSnackbar({ open: true, type: 'error', message: e.response.data.message });
         }
     }
 
@@ -113,19 +124,20 @@ const Login = () => {
                     <Typography sx={{ textAlign: 'right', fontSize: '14px' }}><Link to='/forgot_password'>Forgot password?</Link></Typography>
                     <Button variant="contained" sx={{ backgroundColor: '#122620', margin: '20px 0', textTransform: 'capitalize' }} onClick={handleSubmit}>Sign In</Button>
                     <Snackbar
-                        anchorOrigin={{vertical: "top", horizontal: "center"}}
+                        anchorOrigin={{ vertical: "top", horizontal: "center" }}
                         open={snackbar.open}
                         autoHideDuration={2000}
                         TransitionComponent={Grow}
-                        onClose={() => setSnackbar({open: false, type: ''})}
+                        onClose={() => setSnackbar({ open: false, type: '' })}
                     >
-                        <Alert onClose={() => setSnackbar({open: false, type: ''})} severity={snackbar.type} sx={{ maxWidth: '500px', textAlign: 'left' }}>
+                        <Alert onClose={() => setSnackbar({ open: false, type: '' })} severity={snackbar.type} sx={{ maxWidth: '500px', textAlign: 'left' }}>
                             {snackbar.message}
                         </Alert>
                     </Snackbar>
                 </Box>
             </Box>
-    </Fragment>
-)}
+        </Fragment>
+    )
+}
 
 export default Login

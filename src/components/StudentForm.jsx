@@ -72,9 +72,10 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         if (!formData.attender) newErrors.attender = "Attender is required";
         if (formData.status === "Follow up") {
             if (!formData.follow_up_date) newErrors.follow_up_date = "Follow-up time required";
+        }
+        if (formData.status === "Follow up" || formData.status === "Loss") {
             if (!formData.note?.trim()) newErrors.note = "Note is required";
         }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -175,7 +176,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Box>
                         <Typography variant='body2'>Name</Typography>
-                        <TextField fullWidth size="small" variant="outlined" name="name" disabled={isUser} value={formData.name} onChange={handleInputChange} error={!!errors.name} helperText={errors.name} />
+                        <TextField fullWidth size="small" variant="outlined" name="name" value={formData.name} onChange={handleInputChange} error={!!errors.name} helperText={errors.name} />
                     </Box>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -242,7 +243,6 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                     </FormControl>
                 </Grid>
                 {formData.status === 'Follow up' && (
-                    <>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <Box>
                                 <Typography variant="body2">Follow-up time</Typography>
@@ -267,13 +267,13 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                                     />
                                 </LocalizationProvider>
                             </Box>
-                        </Grid>
-
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <Box>
-                                <Typography variant="body2">Note</Typography>
-                                <TextField
-                                    fullWidth
+                        </Grid> )}
+                {formData.status === 'Follow up' || formData.status === 'Loss' ? (
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <Box>
+                            <Typography variant="body2">Note</Typography>
+                            <TextField
+                                fullWidth
                                     multiline
                                     size="small"
                                     variant="outlined"
@@ -285,8 +285,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                                 />
                             </Box>
                         </Grid>
-                    </>
-                )}
+                ) : null}
                 {formData.status === 'Follow up' && formData.payment_status !== 'Fully Paid' && <>
                     <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <Typography variant='body2'>Enter Amount</Typography>

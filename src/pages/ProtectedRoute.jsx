@@ -279,10 +279,6 @@ useEffect(() => {
                       {n.note}
                     </Typography>
 
-                    <Typography variant="body2" sx={{ pt: 1 }}>
-                      {n.attender}
-                    </Typography>
-
                     <Typography variant="caption" sx={{ pt: 1, display: 'block', textAlign: 'right' }}>
                       {dateFormat(n.followupTime)}
                     </Typography>

@@ -15,9 +15,10 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 
 import { logout } from "../features/user";
 import logo from '../assets/revive.jpeg';
-import { socket } from "../utils/socket";
 import Badge from '@mui/material/Badge';
 import { dateFormat } from "../components/StudentForm";
+
+import { socket } from "../utils/socket";
 
 const ProtectedRoute = ({ allowedRoles }) => {
 
@@ -26,74 +27,134 @@ const ProtectedRoute = ({ allowedRoles }) => {
   const notifRef = useRef(null);
 
   const [anchorEl, setAnchorEl] = useState(null);
-
-  // 🔥 Notifications (persisted)
-  const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem("notifications");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // 🔥 Unread count (persisted)
-  const [unreadCount, setUnreadCount] = useState(() => {
-    const saved = localStorage.getItem("unreadCount");
-    return saved ? JSON.parse(saved) : 0;
-  });
-
   const [notifOpen, setNotifOpen] = useState(false);
 
-  const { isLoggedIn, role, name } = useSelector((state) => state.user);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
+  const { isLoggedIn, role, name, _id } = useSelector((state) => state.user);
+
+  // 🔐 Auth checks
   if (!isLoggedIn) return <Navigate to='/signin' />;
   if (allowedRoles && !allowedRoles.includes(role)) return <Navigate to="/" />;
 
   const open = Boolean(anchorEl);
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
   const handleLogout = () => {
     handleClose();
+    socket.disconnect();
     dispatch(logout());
     navigate("/signin");
   };
 
-  // 🔥 SOCKET LISTENER
+  // ✅ Load notifications from localStorage
   useEffect(() => {
-  const handleReminder = (data) => {
+    const stored = JSON.parse(localStorage.getItem(`notifications_${_id}`)) || [];
+    const storedUnread = Number(localStorage.getItem(`unreadCount_${_id}`)) || 0;
 
-     setNotifications(prev => {
-      const exists = prev.some(n =>
-        n.phone === data.phone &&
-        n.followupTime === data.followupTime
+    setNotifications(stored);
+    setUnreadCount(storedUnread);
+  }, []);
+
+useEffect(() => {
+  if (!_id) return;
+
+  // ✅ connect socket if not connected
+  if (!socket.connected) {
+    socket.connect();
+  }
+
+  socket.off("connect");
+  socket.off("bulkNotifications");
+  socket.off("followupReminder");
+
+  // ✅ register user AFTER connection
+  const handleConnect = () => {
+    console.log("Connected:", socket.id);
+    console.log("Registering user:", _id);
+
+    socket.emit("registerUser", _id);
+  };
+
+  socket.on("connect", handleConnect);
+
+  if (socket.connected) {
+    console.log("Already connected, registering:", _id);
+    socket.emit("registerUser", _id);
+  }
+
+  // ✅ BULK (missed notifications after login/refresh)
+  socket.on("bulkNotifications", (data) => {
+    console.log("BULK RECEIVED:", data);
+
+    setNotifications((prev) => {
+      const merged = [...data, ...prev];
+
+      const unique = merged.filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex(
+            (n) =>
+              n.phone === item.phone &&
+              n.followupTime === item.followupTime
+          )
+      );
+
+      const limited = unique.slice(0, 15);
+
+      localStorage.setItem(`notifications_${_id}`,JSON.stringify(limited));
+
+      return limited;
+    });
+
+    // ✅ update unread count
+      setUnreadCount((prev) => {
+      const newCount = prev + data.length;
+
+      localStorage.setItem(`unreadCount_${_id}`, newCount);
+
+      return newCount;
+    });
+  });
+
+  // ✅ REAL-TIME notification
+  socket.on("followupReminder", (data) => {
+    console.log("REALTIME RECEIVED:", data);
+
+    setNotifications((prev) => {
+      const exists = prev.some(
+        (n) =>
+          n.phone === data.phone &&
+          n.followupTime === data.followupTime
       );
 
       if (exists) return prev;
 
       const updated = [data, ...prev].slice(0, 15);
-      localStorage.setItem("notifications", JSON.stringify(updated));
+
+      localStorage.setItem(`notifications_${_id}`,JSON.stringify(updated));
+
       return updated;
     });
 
-    setUnreadCount(prev => {
-      const count = prev + 1;
-      localStorage.setItem("unreadCount", count);
-      return count;
+    setUnreadCount((prev) => {
+      const newCount = prev + 1;
+      localStorage.setItem(`unreadCount_${_id}`,newCount);
+      return newCount;
     });
-  };
+  });
 
-  socket.on("followupReminder", handleReminder);
-
+  // ✅ cleanup (VERY IMPORTANT)
   return () => {
-    socket.off("followupReminder", handleReminder);
+    socket.off("connect");
+    socket.off("bulkNotifications");
+    socket.off("followupReminder");
   };
-}, []);
+}, [_id]);
 
-  // 🔥 CLOSE ON OUTSIDE CLICK
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
@@ -128,29 +189,30 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
         <Box sx={{ display: 'flex', alignItems: 'center', position: "relative" }}>
 
+          {/* 🔔 Notification Icon */}
           <Badge
             badgeContent={unreadCount}
             color="error"
             sx={{ marginRight: 3, cursor: "pointer" }}
+            onClick={() => {
+              setNotifOpen(!notifOpen);
+              setUnreadCount(0);
+              localStorage.setItem(`unreadCount_${_id}`, 0);
+            }}
           >
-            <NotificationsOutlinedIcon
-              onClick={() => {
-                setNotifOpen(prev => !prev);
-                setUnreadCount(0);
-                localStorage.setItem("unreadCount", 0);
-              }}
-            />
+            <NotificationsOutlinedIcon />
           </Badge>
 
+          {/* 👤 Avatar */}
           <Avatar
             sx={{ backgroundColor: 'red', cursor: 'pointer' }}
             onClick={handleClick}
           >
-            {name.charAt(0)}
+            {name?.charAt(0)}
           </Avatar>
 
+          {/* 👇 User Menu */}
           <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-
             {role === 'admin' && [
               <MenuItem key="home" onClick={() => { handleClose(); navigate('/'); }}>
                 <ListItemIcon><HomeIcon fontSize="small" /></ListItemIcon>
@@ -181,6 +243,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
             </MenuItem>
           </Menu>
 
+          {/* 🔔 Notification Panel */}
           {notifOpen && (
             <Paper
               ref={notifRef}
@@ -189,7 +252,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
                 position: "absolute",
                 top: 40,
                 right: 80,
-                width: 300,
+                width: 320,
                 maxHeight: 400,
                 overflowY: "auto",
                 zIndex: 5
@@ -203,34 +266,37 @@ const ProtectedRoute = ({ allowedRoles }) => {
                 notifications.map((n, i) => (
                   <Box key={i} sx={{ px: 2, pt: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
-                        <Box>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      {n.name}
-                    </Typography>
-                    <Typography variant="caption">{n.course}</Typography>
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          {n.name}
+                        </Typography>
+                        <Typography variant="caption">{n.course}</Typography>
+                      </Box>
+                      <Typography variant="body2">{n.phone}</Typography>
                     </Box>
-                    <Typography variant="body2">{n.phone}</Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ pt:1 }}>
+
+                    <Typography variant="body2" sx={{ pt: 1 }}>
                       {n.note}
                     </Typography>
-                    <Typography variant="body2" sx={{ pt:1 }}>
+
+                    <Typography variant="body2" sx={{ pt: 1 }}>
                       {n.attender}
                     </Typography>
-                    <Typography variant="caption" sx={{ pt:1, display: 'block', textAlign: 'right' }}>
+
+                    <Typography variant="caption" sx={{ pt: 1, display: 'block', textAlign: 'right' }}>
                       {dateFormat(n.followupTime)}
                     </Typography>
+
                     <Divider sx={{ mt: 1 }} />
                   </Box>
                 ))
               )}
             </Paper>
           )}
-
         </Box>
       </Paper>
 
-      {/* BACKDROP FOR MENU */}
+      {/* BACKDROP */}
       {open && (
         <Box
           onClick={handleClose}
@@ -246,7 +312,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
         />
       )}
 
-      {/* MAIN CONTENT */}
+      {/* MAIN */}
       <Box sx={{ backgroundColor: 'white', height: '100%', overflow: 'auto' }}>
         <Outlet />
       </Box>

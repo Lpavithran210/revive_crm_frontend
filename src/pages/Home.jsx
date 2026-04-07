@@ -15,7 +15,6 @@ import { apiCall } from '../utils/axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCourses } from '../features/courses';
 import { fetchMembers } from '../features/members';
-import { socket } from '../utils/socket';
 
 const Home = () => {
 
@@ -127,74 +126,6 @@ const Home = () => {
         dispatch(fetchCourses())
         dispatch(fetchMembers())
     }, [])
-
-useEffect(() => {
-
-  const handleNewEnquiry = (student) => {
-    console.log("Enquiry RECEIVED:", student);
-
-    // ✅ 1. Update main data
-    setData(prev => {
-      const exists = prev.some(p => p._id === student._id);
-      if (exists) return prev;
-      return [student, ...prev];
-    });
-
-    // ✅ 2. Update status count
-    setStatusCounts(prev => ({
-      ...prev,
-      [student.status]: (prev[student.status] || 0) + 1
-    }));
-
-    // ✅ 3. Update source count
-    setSourceCounts(prev => ({
-      ...prev,
-      [student.source]: (prev[student.source] || 0) + 1
-    }));
-
-    // ✅ 4. Update attender count
-    if (student.attender) {
-      setAttenderCounts(prev => ({
-        ...prev,
-        [student.attender]: (prev[student.attender] || 0) + 1
-      }));
-    }
-
-    // ✅ 5. Update course stats
-    if (student.course) {
-      const course = student.course.trim();
-      setCourseStats(prev => ({
-        ...prev,
-        [course]: (prev[course] || 0) + 1
-      }));
-    }
-
-    // ✅ 6. Update revenue
-    const newPaymentTotal =
-      student.payments?.reduce(
-        (sum, p) => sum + (p.paid_amount || 0),
-        0
-      ) || 0;
-
-    setTotalPaid(prev => prev + newPaymentTotal);
-
-    // ✅ 7. Update revenue by attender
-    if (student.attender) {
-      setRevenueByAttender(prev => ({
-        ...prev,
-        [student.attender]:
-          (prev[student.attender] || 0) + newPaymentTotal
-      }));
-    }
-  };
-
-  socket.on("new-enquiry", handleNewEnquiry);
-
-  return () => {
-    socket.off("new-enquiry", handleNewEnquiry);
-  };
-
-}, []);
 
     return <>
         <Box sx={{ padding: 2 }}>

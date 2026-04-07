@@ -15,6 +15,7 @@ import { apiCall } from '../utils/axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCourses } from '../features/courses';
 import { fetchMembers } from '../features/members';
+import { socket } from '../utils/socket';
 
 const Home = () => {
 
@@ -126,6 +127,29 @@ const Home = () => {
         dispatch(fetchCourses())
         dispatch(fetchMembers())
     }, [])
+
+    useEffect(() => {
+        socket.connect();
+
+        socket.on("newEnquiry", (newStudent) => {
+            console.log("📥 New enquiry:", newStudent);
+
+            const createdDate = dayjs(newStudent.createdAt);
+
+            if (
+                createdDate.isAfter(startDate.startOf("day")) &&
+                createdDate.isBefore(endDate.endOf("day"))
+            ) {
+                setData(prev => [newStudent, ...prev]);
+            }
+
+            fetchEnquiries();
+        });
+
+        return () => {
+            socket.off("newEnquiry");
+        };
+    }, [startDate, endDate]);
 
     return <>
         <Box sx={{ padding: 2 }}>

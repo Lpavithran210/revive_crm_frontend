@@ -30,6 +30,13 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 course_fee: selectedCourse?.fee || ""
             }));
         }
+        else if (name === "payment_mode") {
+            setFormData(prev => ({
+                ...prev,
+                payment_mode: value,
+                amount: value === "EMI" ? prev.course_fee : ""
+            }));
+        }
         else {
             setFormData(prev => ({
                 ...prev,
@@ -306,6 +313,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                                 value={formData.payment_mode || ''}
                                 onChange={handleInputChange}
                             >
+                                <MenuItem value="EMI">EMI</MenuItem>
                                 <MenuItem value="Cash">Cash</MenuItem>
                                 <MenuItem value="UPI">UPI</MenuItem>
                                 <MenuItem value="Card">Card</MenuItem>

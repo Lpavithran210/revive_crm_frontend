@@ -20,6 +20,7 @@ import { dateFormat } from "../components/StudentForm";
 
 import { socket } from "../utils/socket";
 import apiClient from "../utils/axios";
+import dayjs from "dayjs";
 
 const ProtectedRoute = ({ allowedRoles }) => {
 
@@ -281,7 +282,14 @@ const ProtectedRoute = ({ allowedRoles }) => {
                       variant="caption"
                       sx={{ pt: 1, display: 'block', textAlign: 'right' }}
                     >
-                      {dateFormat(n.data?.followupTime)}
+                      Next Followup: {dateFormat(n.data?.followupTime)}
+                    </Typography>
+
+                    <Typography
+                      variant="caption"
+                      sx={{ pt: 1, display: 'block', textAlign: 'right' }}
+                    >
+                      Previous Followup: {dateFormat(n.data?.lastFollowupDate)}
                     </Typography>
 
                     <Divider sx={{ mt: 1 }} />

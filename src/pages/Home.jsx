@@ -45,61 +45,24 @@ const Home = () => {
 
     const fetchEnquiries = async () => {
         try {
-            const startFormatted = startDate.startOf('day').format("YYYY-MM-DDTHH:mm:ss");
-            const endFormatted = endDate.endOf('day').format("YYYY-MM-DDTHH:mm:ss");
+            const startFormatted = startDate.startOf('day').toISOString();
+            const endFormatted = endDate.endOf('day').toISOString();
             const response = await apiCall('get', '/api/enquiries', null, {
                 startDate: startFormatted,
                 endDate: endFormatted,
             }, accessToken);
-
-            setData(response);
-
-            const totalPaidAmount = response.reduce((total, item) => {
-                const paymentTotal = item.payments?.reduce((sum, payment) => sum + (payment.paid_amount || 0), 0) || 0;
-                return total + paymentTotal;
-            }, 0);
-            setTotalPaid(totalPaidAmount);
-
-            const countsByStatus = response.reduce((acc, item) => {
-                acc[item.status] = (acc[item.status] || 0) + 1;
-                return acc;
-            }, {});
-            setStatusCounts(countsByStatus);
-
-            const countsBySource = response.reduce((acc, item) => {
-                acc[item.source] = (acc[item.source] || 0) + 1;
-                return acc;
-            }, {});
-            setSourceCounts(countsBySource);
-
-            const totalByAttender = response.reduce((acc, item) => {
-                const name = item.attender;
-                if (name) {
-                    acc[name] = (acc[name] || 0) + 1;
-                }
-                return acc;
-            }, {});
-
-            setAttenderCounts(totalByAttender);
-
-            const countsByCourse = response.reduce((acc, item) => {
-                const course = item.course?.trim();
-                if (course) {
-                    acc[course] = (acc[course] || 0) + 1;
-                }
-                return acc;
-            }, {});
-            setCourseStats(countsByCourse);
-
-            const revenueByAttender = response.reduce((acc, item) => {
-                const name = item.attender;
-                const total = item.payments?.reduce((sum, payment) => sum + (payment.paid_amount || 0), 0) || 0;
-                if (name) {
-                    acc[name] = (acc[name] || 0) + total;
-                }
-                return acc;
-            }, {});
-            setRevenueByAttender(revenueByAttender);
+            setData(response.data);
+            setStatusCounts({
+                Pending: response.summary.pending,
+                "Follow up": response.summary.followUps,
+                Loss: response.summary.loss,
+                Success: response.summary.success
+            });
+            setTotalPaid(response.summary.revenue);
+            setSourceCounts(response.analytics.sourceCounts);
+            setAttenderCounts(response.analytics.attenderCounts);
+            setCourseStats(response.analytics.courseStats);
+            setRevenueByAttender(response.analytics.revenueByAttender);
 
         } catch (error) {
             console.error('Error fetching enquiries:', error);

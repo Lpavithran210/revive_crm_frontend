@@ -27,6 +27,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const notifRef = useRef(null);
+  const audioRef = useRef(null);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -95,6 +96,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
     socket.on("followupReminder", (notification) => {
 
       console.log("Realtime notification:", notification);
+      audioRef.current?.play().catch(() => {});
 
       setNotifications(prev => [notification, ...prev]);
 
@@ -152,6 +154,31 @@ const ProtectedRoute = ({ allowedRoles }) => {
     };
 
   }, [notifOpen]);
+
+  useEffect(() => {
+    audioRef.current = new Audio('/followup.mp3');
+}, []);
+
+  useEffect(() => {
+  const unlockAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.play()
+        .then(() => {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        })
+        .catch(() => {});
+    }
+
+    window.removeEventListener('click', unlockAudio);
+  };
+
+  window.addEventListener('click', unlockAudio);
+
+  return () => {
+    window.removeEventListener('click', unlockAudio);
+  };
+}, []);
 
   return (
     <>

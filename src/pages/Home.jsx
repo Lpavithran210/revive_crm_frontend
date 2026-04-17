@@ -16,9 +16,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchCourses } from '../features/courses';
 import { fetchMembers } from '../features/members';
 import { socket } from '../utils/socket';
+import { Snackbar, Alert } from '@mui/material';
+import { useRef } from 'react';
 
 const Home = () => {
-
+    
     const dateFieldStyle = {
         width: '200px',
         '& .MuiInputBase-root': {
@@ -30,7 +32,7 @@ const Home = () => {
             fontSize: '0.875rem',
         },
     };
-
+    
     const [startDate, setStartDate] = useState(dayjs());
     const [endDate, setEndDate] = useState(dayjs());
     const [data, setData] = useState([])
@@ -41,7 +43,10 @@ const Home = () => {
     const [totalPaid, setTotalPaid] = useState(0);
     const [revenueByAttender, setRevenueByAttender] = useState({});
     const { accessToken } = useSelector((state) => state.user);
+    const [openAlert, setOpenAlert] = useState(false);
+    const [alertMsg, setAlertMsg] = useState('');
     const dispatch = useDispatch()
+    const audioRef = useRef(null);
 
     const fetchEnquiries = async () => {
         try {
@@ -92,27 +97,92 @@ const Home = () => {
     }, [])
 
     useEffect(() => {
-        socket.connect();
+    socket.connect();
 
-        socket.on("newEnquiry", (newStudent) => {
-            console.log("📥 New enquiry:", newStudent);
+    socket.on("newEnquiry", (newStudent) => {
+        console.log("📥 New enquiry:", newStudent);
 
-            const createdDate = dayjs(newStudent.createdAt);
+        const createdDate = dayjs(newStudent.createdAt);
 
-            if (
-                createdDate.isAfter(startDate.startOf("day")) &&
-                createdDate.isBefore(endDate.endOf("day"))
-            ) {
-                setData(prev => [newStudent, ...prev]);
-            }
+       const isInRange = createdDate.isBetween(
+            startDate.startOf("day"),
+            endDate.endOf("day"),
+            null,
+            "[]"
+        );
 
-            fetchEnquiries();
+        // ✅ 1. Update table instantly
+        if (isInRange) {
+            setData(prev => [
+            {
+                ...newStudent,
+                _id: newStudent._id || newStudent.id, // fallback
+            },
+            ...prev
+        ]);
+        }
+
+        // ✅ 2. Update status counts locally
+        setStatusCounts(prev => ({
+            ...prev,
+            Pending: (prev.Pending || 0) + 1
+        }));
+
+        // ✅ 3. Update source counts
+        if (newStudent.source) {
+            setSourceCounts(prev => ({
+                ...prev,
+                [newStudent.source]: (prev[newStudent.source] || 0) + 1
+            }));
+        }
+
+        // ✅ 4. Update attender counts
+        if (newStudent.attender?.name) {
+            setAttenderCounts(prev => ({
+                ...prev,
+                [newStudent.attender.name]: (prev[newStudent.attender.name] || 0) + 1
+            }));
+        }
+
+        // ✅ 5. Update course stats
+        if (newStudent.course?.name) {
+            setCourseStats(prev => ({
+                ...prev,
+                [newStudent.course.name]: (prev[newStudent.course.name] || 0) + 1
+            }));
+        }
+        audioRef.current?.play().catch(err => {
+            console.log("Audio blocked:", err);
         });
+        setAlertMsg(`New enquiry from ${newStudent.name}`);
+        setOpenAlert(true);
+    });
 
-        return () => {
-            socket.off("newEnquiry");
-        };
-    }, [startDate, endDate]);
+    return () => {
+        socket.off("newEnquiry");
+    };
+}, [startDate, endDate]);
+
+useEffect(() => {
+    audioRef.current = new Audio('/newEnq.mp3');
+}, []);
+
+useEffect(() => {
+    const unlockAudio = () => {
+        if (audioRef.current) {
+            audioRef.current.play()
+                .then(() => {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                })
+                .catch(() => {});
+        }
+
+        window.removeEventListener('click', unlockAudio);
+    };
+
+    window.addEventListener('click', unlockAudio);
+}, []);
 
     return <>
         <Box sx={{ padding: 2 }}>
@@ -249,6 +319,21 @@ const Home = () => {
             </Grid>
             <StudentsTable records={data} refreshRecords={fetchEnquiries} />
         </Box>
+        <Snackbar
+            open={openAlert}
+            autoHideDuration={4000}
+            onClose={() => setOpenAlert(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+            <Alert
+                onClose={() => setOpenAlert(false)}
+                severity="success"
+                variant="filled"
+                sx={{ width: '100%' }}
+            >
+                {alertMsg}
+            </Alert>
+        </Snackbar>
     </>
 }
 

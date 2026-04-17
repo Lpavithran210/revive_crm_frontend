@@ -96,93 +96,73 @@ const Home = () => {
         dispatch(fetchMembers())
     }, [])
 
-    useEffect(() => {
-    socket.connect();
+   useEffect(() => {
 
-    socket.on("newEnquiry", (newStudent) => {
-        console.log("📥 New enquiry:", newStudent);
+  const handleNewEnquiry = (event) => {
+    const newStudent = event.detail;
 
-        const createdDate = dayjs(newStudent.createdAt);
+    console.log("📥 Home received:", newStudent);
 
-       const isInRange = createdDate.isBetween(
-            startDate.startOf("day"),
-            endDate.endOf("day"),
-            null,
-            "[]"
-        );
+    const createdDate = dayjs(newStudent.createdAt);
 
-        // ✅ 1. Update table instantly
-        if (isInRange) {
-            setData(prev => [
-            {
-                ...newStudent,
-                _id: newStudent._id || newStudent.id, // fallback
-            },
-            ...prev
-        ]);
-        }
+    const isInRange = createdDate.isBetween(
+      startDate.startOf("day"),
+      endDate.endOf("day"),
+      null,
+      "[]"
+    );
 
-        // ✅ 2. Update status counts locally
-        setStatusCounts(prev => ({
-            ...prev,
-            Pending: (prev.Pending || 0) + 1
-        }));
+    // ✅ Update table
+    if (isInRange) {
+      setData(prev => [
+        {
+          ...newStudent,
+          _id: newStudent._id || newStudent.id,
+        },
+        ...prev
+      ]);
+    }
 
-        // ✅ 3. Update source counts
-        if (newStudent.source) {
-            setSourceCounts(prev => ({
-                ...prev,
-                [newStudent.source]: (prev[newStudent.source] || 0) + 1
-            }));
-        }
+    // ✅ Update counts
+    setStatusCounts(prev => ({
+      ...prev,
+      Pending: (prev.Pending || 0) + 1
+    }));
 
-        // ✅ 4. Update attender counts
-        if (newStudent.attender?.name) {
-            setAttenderCounts(prev => ({
-                ...prev,
-                [newStudent.attender.name]: (prev[newStudent.attender.name] || 0) + 1
-            }));
-        }
+    if (newStudent.source) {
+      setSourceCounts(prev => ({
+        ...prev,
+        [newStudent.source]: (prev[newStudent.source] || 0) + 1
+      }));
+    }
 
-        // ✅ 5. Update course stats
-        if (newStudent.course?.name) {
-            setCourseStats(prev => ({
-                ...prev,
-                [newStudent.course.name]: (prev[newStudent.course.name] || 0) + 1
-            }));
-        }
-        audioRef.current?.play().catch(err => {
-            console.log("Audio blocked:", err);
-        });
-        setAlertMsg(`New enquiry from ${newStudent.name}`);
-        setOpenAlert(true);
-    });
+    if (newStudent.attender?.name) {
+      setAttenderCounts(prev => ({
+        ...prev,
+        [newStudent.attender.name]: (prev[newStudent.attender.name] || 0) + 1
+      }));
+    }
 
-    return () => {
-        socket.off("newEnquiry");
-    };
+    if (newStudent.course?.name) {
+      setCourseStats(prev => ({
+        ...prev,
+        [newStudent.course.name]: (prev[newStudent.course.name] || 0) + 1
+      }));
+    }
+
+    // ✅ 🔥 SHOW ALERT
+    setAlertMsg(`New enquiry from ${newStudent.name}`);
+    setOpenAlert(true);
+  };
+
+  window.addEventListener("newEnquiryEvent", handleNewEnquiry);
+
+  return () => {
+    window.removeEventListener("newEnquiryEvent", handleNewEnquiry);
+  };
+
 }, [startDate, endDate]);
 
-useEffect(() => {
-    audioRef.current = new Audio('/newEnq.mp3');
-}, []);
-
-useEffect(() => {
-    const unlockAudio = () => {
-        if (audioRef.current) {
-            audioRef.current.play()
-                .then(() => {
-                    audioRef.current.pause();
-                    audioRef.current.currentTime = 0;
-                })
-                .catch(() => {});
-        }
-
-        window.removeEventListener('click', unlockAudio);
-    };
-
-    window.addEventListener('click', unlockAudio);
-}, []);
 
     return <>
         <Box sx={{ padding: 2 }}>

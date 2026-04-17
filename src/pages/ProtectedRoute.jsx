@@ -27,7 +27,8 @@ const ProtectedRoute = ({ allowedRoles }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const notifRef = useRef(null);
-  const audioRef = useRef(null);
+  const followupAudioRef = useRef(null);
+  const enquiryAudioRef = useRef(null);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -75,6 +76,34 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
   }, [_id]);
 
+   useEffect(() => {
+    followupAudioRef.current = new Audio('/followup.mp3');
+    enquiryAudioRef.current = new Audio('/newEnq.mp3');
+  }, []);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      [followupAudioRef.current, enquiryAudioRef.current].forEach(audio => {
+        if (audio) {
+          audio.play()
+            .then(() => {
+              audio.pause();
+              audio.currentTime = 0;
+            })
+            .catch(() => {});
+        }
+      });
+
+      window.removeEventListener('click', unlockAudio);
+    };
+
+    window.addEventListener('click', unlockAudio);
+
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+    };
+  }, []);
+
   // 🔹 Socket connection
   useEffect(() => {
 
@@ -84,31 +113,30 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
     socket.off("connect");
     socket.off("followupReminder");
+    socket.off("newEnquiry");
 
     socket.on("connect", () => {
-
       console.log("Connected:", socket.id);
-
       socket.emit("registerUser", _id);
-
     });
 
     socket.on("followupReminder", (notification) => {
-
-      console.log("Realtime notification:", notification);
-      audioRef.current?.play().catch(() => {});
-
+      console.log("🔔 Follow-up:", notification);
+      followupAudioRef.current?.play().catch(() => {});
       setNotifications(prev => [notification, ...prev]);
-
       setUnreadCount(prev => prev + 1);
+    });
 
+    socket.on("newEnquiry", (student) => {
+      console.log("🌍 New enquiry:", student);
+      enquiryAudioRef.current?.play().catch(() => {});
+      window.dispatchEvent(new CustomEvent("newEnquiryEvent", { detail: student }));
     });
 
     return () => {
-
       socket.off("connect");
       socket.off("followupReminder");
-
+      socket.off("newEnquiry");
     };
 
   }, [_id]);
@@ -132,53 +160,20 @@ const ProtectedRoute = ({ allowedRoles }) => {
   useEffect(() => {
 
     const handleClickOutside = (event) => {
-
       if (notifRef.current && !notifRef.current.contains(event.target)) {
-
         setNotifOpen(false);
-
       }
-
     };
 
     if (notifOpen) {
-
       document.addEventListener("mousedown", handleClickOutside);
-
     }
 
     return () => {
-
       document.removeEventListener("mousedown", handleClickOutside);
-
     };
 
   }, [notifOpen]);
-
-  useEffect(() => {
-    audioRef.current = new Audio('/followup.mp3');
-}, []);
-
-  useEffect(() => {
-  const unlockAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.play()
-        .then(() => {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-        })
-        .catch(() => {});
-    }
-
-    window.removeEventListener('click', unlockAudio);
-  };
-
-  window.addEventListener('click', unlockAudio);
-
-  return () => {
-    window.removeEventListener('click', unlockAudio);
-  };
-}, []);
 
   return (
     <>

@@ -55,7 +55,7 @@ const EnquiryForm = () => {
             complete: async function (results) {
 
                 const students = results.data.map((row) => {
-                    const courseText = (row.are_you_interested_in || row.campaign_name)?.replace(/campaign/i, '').trim();
+                    const courseText = (row.are_you_interested_in || row.campaign_name)?.replace(/\b(hiring|campaign)\b/gi, '').replace(/\s+/g, ' ').trim();
                     const formattedCourse = formatCourseTitle(courseText);
                     const matchedCourse = courseLookup[formattedCourse?.toLowerCase()];
                     return {

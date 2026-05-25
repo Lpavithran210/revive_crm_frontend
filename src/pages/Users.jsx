@@ -154,6 +154,7 @@ const Users = () => {
                         <Select fullWidth size="small" name="role" value={state.role || ''} onChange={handleInputChange}>
                             <MenuItem value="admin">Admin</MenuItem>
                             <MenuItem value="user">User</MenuItem>
+                            <MenuItem value="counsellor">Counsellor</MenuItem>
                         </Select>
                         {errors.role && <FormHelperText>{errors.role}</FormHelperText>}
                     </FormControl>

@@ -18,7 +18,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [errors, setErrors] = useState({})
     const allUsers = useSelector(state => state.members.members);
-    const members = allUsers.filter(user => user.role === 'user')
+    const members = allUsers.filter(user => user.role === 'counsellor')
     const courses = useSelector(state => state.courses.allCourses)
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -63,6 +63,10 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
 
     const { role } = useSelector((state) => state.user);
     const isUser = role === 'user';
+    const isAdmin = role === 'admin';
+    const isCounsellor = role === 'counsellor';
+
+    const disableForCounsellorAndUser = isCounsellor || isUser;
 
     const validateForm = () => {
         const newErrors = {};
@@ -110,6 +114,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
     }, [formData.payments]);
     
     const handleFormSubmit = () => {
+        if (isUser) return;
         if (!validateForm()) return;
     
         let updatedPayments = [...(formData.payments || [])];
@@ -183,25 +188,25 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Box>
                         <Typography variant='body2'>Name</Typography>
-                        <TextField fullWidth size="small" variant="outlined" name="name" value={formData.name} onChange={handleInputChange} error={!!errors.name} helperText={errors.name} />
+                        <TextField fullWidth size="small" variant="outlined" name="name" disabled={isUser} value={formData.name} onChange={handleInputChange} error={!!errors.name} helperText={errors.name} />
                     </Box>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Box>
                         <Typography variant='body2'>Phone</Typography>
-                        <TextField fullWidth type="number" size="small" variant="outlined" name="phone" disabled={isUser} value={formData.phone} onChange={handleInputChange} error={!!errors.phone} helperText={errors.phone} />
+                        <TextField fullWidth type="number" size="small" variant="outlined" name="phone" disabled={disableForCounsellorAndUser} value={formData.phone} onChange={handleInputChange} error={!!errors.phone} helperText={errors.phone} />
                     </Box>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Box>
                         <Typography variant='body2'>City</Typography>
-                        <TextField fullWidth type="text" size="small" variant="outlined" name="city" disabled={isUser} value={formData.city} onChange={handleInputChange} error={!!errors.city} helperText={errors.city} />
+                        <TextField fullWidth type="text" size="small" variant="outlined" name="city" disabled={disableForCounsellorAndUser} value={formData.city} onChange={handleInputChange} error={!!errors.city} helperText={errors.city} />
                     </Box>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                    <FormControl fullWidth size="small" error={!!errors.source} disabled={isUser}>
+                    <FormControl fullWidth size="small" error={!!errors.source} disabled={disableForCounsellorAndUser}>
                         <Typography variant='body2'>Source</Typography>
-                        <Select fullWidth size="small" name="source" disabled={isUser} value={formData.source} onChange={handleInputChange} error={!!errors.source} helperText={errors.source}>
+                        <Select fullWidth size="small" name="source" disabled={disableForCounsellorAndUser} value={formData.source} onChange={handleInputChange} error={!!errors.source} helperText={errors.source}>
                             <MenuItem value="Meta">Meta</MenuItem>
                             <MenuItem value="Instagram">Instagram</MenuItem>
                             <MenuItem value="Website">Website</MenuItem>
@@ -214,13 +219,13 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Box>
                         <Typography variant='body2'>Qualification</Typography>
-                        <TextField fullWidth size="small" variant="outlined" name="qualification" value={formData.qualification} onChange={handleInputChange} error={!!errors.qualification} helperText={errors.qualification} />
+                        <TextField fullWidth size="small" variant="outlined" name="qualification" disabled={isUser} value={formData.qualification} onChange={handleInputChange} error={!!errors.qualification} helperText={errors.qualification} />
                     </Box>
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <FormControl fullWidth size="small" error={!!errors.course}>
                         <Typography variant='body2'>Course</Typography>
-                        <Select fullWidth size="small" name="course" value={formData.course} onChange={handleInputChange}>
+                        <Select fullWidth size="small" name="course" disabled={isUser} value={formData.course} onChange={handleInputChange}>
                             {courses.map((item) => <MenuItem value={item.title} key={item._id}>{item.title}</MenuItem>)}
                         </Select>
                         {errors.course && <FormHelperText>{errors.course}</FormHelperText>}
@@ -229,8 +234,9 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <FormControl fullWidth size="small" error={!!errors.attender}>
                         <Typography variant='body2'>Attender</Typography>
-                        <Select fullWidth size="small" name="attender" value={formData.attender} onChange={handleInputChange}>
+                        <Select fullWidth size="small" name="attender" disabled={isUser} value={formData.attender} onChange={handleInputChange}>
                             {members.map((person, ind) => {
+                                console.log(person)
                                 return <MenuItem key={ind} value={person.name}>{person.name}</MenuItem>
                             })}
                         </Select>
@@ -240,7 +246,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <FormControl fullWidth size="small" error={!!errors.status}>
                         <Typography variant='body2'>Status</Typography>
-                        <Select fullWidth size="small" name="status" value={formData.status} onChange={handleInputChange}>
+                        <Select fullWidth size="small" name="status" disabled={isUser} value={formData.status} onChange={handleInputChange}>
                             <MenuItem value="Pending">Pending</MenuItem>
                             <MenuItem value="Follow up">Follow Up</MenuItem>
                             <MenuItem value="Loss">Loss</MenuItem>
@@ -255,6 +261,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                                 <Typography variant="body2">Follow-up time</Typography>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DateTimePicker
+                                        disabled={isUser}
                                         value={formData.follow_up_date ? dayjs(formData.follow_up_date) : null}
                                         minDate={dayjs()}
                                         onChange={(newValue) => {
@@ -280,7 +287,8 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                         <Box>
                             <Typography variant="body2">Note</Typography>
                             <TextField
-                                fullWidth
+                                    disabled={isUser}
+                                    fullWidth
                                     multiline
                                     size="small"
                                     variant="outlined"
@@ -297,6 +305,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                     <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <Typography variant='body2'>Enter Amount</Typography>
                         <TextField
+                            disabled={isUser}
                             fullWidth
                             size="small"
                             type="number"
@@ -309,6 +318,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                         <FormControl fullWidth size="small">
                             <Typography variant="body2">Payment Mode</Typography>
                             <Select
+                                disabled={isUser}
                                 name="payment_mode"
                                 value={formData.payment_mode || ''}
                                 onChange={handleInputChange}
@@ -402,8 +412,8 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                 </Grid>}
             </Grid>
             <Box sx={{display: 'flex', justifyContent: 'end', gap: 2}}>
-            {isUpdateMode && <Button variant="outlined" sx={{ textTransform: 'capitalize', border:'1px solid #224436', mt: '30px', color: '#224436' }} onClick={() => setOpenPopup(false)}>Cancel</Button>}
-            <Button variant="contained" sx={{ textTransform: 'capitalize', border:'1px solid #224436', mt: '30px', backgroundColor: '#224436' }} onClick={handleFormSubmit}>{isUpdateMode ? 'Update' : 'Create'}</Button>
+            <Button variant="outlined" sx={{ textTransform: 'capitalize', border:'1px solid #224436', mt: '30px', color: '#224436' }} onClick={() => setOpenPopup(false)}>Cancel</Button>
+            {!isUser && <Button variant="contained" sx={{ textTransform: 'capitalize', border:'1px solid #224436', mt: '30px', backgroundColor: '#224436' }} onClick={handleFormSubmit}>{isUpdateMode ? 'Update' : 'Create'}</Button>}
             </Box>
             <Snackbar
                 open={snackbarOpen}

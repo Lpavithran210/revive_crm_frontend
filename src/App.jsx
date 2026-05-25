@@ -31,15 +31,17 @@ function App() {
           <Route path='/forgot_password' element={<ForgotPassword />} />
           <Route path='/verify_otp' element={<VerifyOTP />} />
           <Route path='/reset_password' element={<ResetPassword />} />
-          <Route element={<ProtectedRoute allowedRoles={['admin', 'user']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['admin', 'user', 'counsellor']} />}>
             <Route path='/signin' element={<Navigate to='/' />} />
             <Route path='/forgot_password' element={<Navigate to='/' />} />
             <Route path='/verify_otp' element={<Navigate to='/' />} />
             <Route path='/' element={<Home />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['admin','counsellor']} />}>
             <Route path="/enquiry" element={<EnquiryForm />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/team" element={<Users />} />
             <Route path="/course" element={<Course />} />
           </Route>

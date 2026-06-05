@@ -20,13 +20,13 @@ const columns = [
         headerAlign: 'left'
     },
     { field: 'source', headerName: 'Source', width: 160 },
-    { field: 'status', headerName: 'Status', width: 160 },
-    { field: 'paid_amount', headerName: 'Paid Amount', width: 140, },
-    { field: 'pending_amount', headerName: 'Pending Amount', width: 150, }, 
-    { field: 'payment_status', headerName: 'Payment Status', width: 140, }, 
+    { field: 'status', headerName: 'Status', width: 160 }, 
     { field: 'attender', headerName: 'Attender', width: 160 },
     { field: 'city', headerName: 'City', width: 150 },
     { field: 'qualification', headerName: 'Qualification', width: 180 },
+    { field: 'paid_amount', headerName: 'Paid Amount', width: 140, },
+    { field: 'pending_amount', headerName: 'Pending Amount', width: 150, }, 
+    { field: 'payment_status', headerName: 'Payment Status', width: 140, },
     { field: 'createdAt', headerName: 'Created At', width: 200 },
 ];
 

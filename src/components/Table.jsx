@@ -21,6 +21,9 @@ const columns = [
     },
     { field: 'source', headerName: 'Source', width: 160 },
     { field: 'status', headerName: 'Status', width: 160 },
+    { field: 'paid_amount', headerName: 'Paid Amount', width: 140, },
+    { field: 'pending_amount', headerName: 'Pending Amount', width: 150, }, 
+    { field: 'payment_status', headerName: 'Payment Status', width: 140, }, 
     { field: 'attender', headerName: 'Attender', width: 160 },
     { field: 'city', headerName: 'City', width: 150 },
     { field: 'qualification', headerName: 'Qualification', width: 180 },
@@ -37,7 +40,12 @@ export default function StudentsTable({ records, refreshRecords }) {
     const { accessToken } = useSelector((state) => state.user);
 
     useEffect(() => {
-        const studentRecord = records.map((item) => ({
+        const studentRecord = records.map((item) => {
+            const totalPaid = item.payments?.reduce(
+                (sum, payment) => sum + (Number(payment.paid_amount) || 0),
+                0
+            ) || 0;
+            return {
             id: item._id,
             name: item.name,
             phone: item.phone,
@@ -48,12 +56,15 @@ export default function StudentsTable({ records, refreshRecords }) {
             history: item.history || [],
             attender: item.attender,
             payments: item.payments || [],
+            paid_amount: item.payments?.length ? totalPaid : "NA",
+            pending_amount: item.payments?.length ? (item.balance_amount ?? 0) : "NA",
             balance_amount: item.balance_amount || 0,
             payment_status: item.payment_status || "Unpaid",
             city: item.city,
             qualification: item.qualification,
             createdAt: dateFormat(item.createdAt),
-        }));
+        }
+    });
         setStudents(studentRecord);
     }, [records]);
     

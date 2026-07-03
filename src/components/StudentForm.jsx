@@ -34,7 +34,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
             setFormData(prev => ({
                 ...prev,
                 payment_mode: value,
-                amount: value === "EMI" ? prev.course_fee : ""
+                amount: value
             }));
         }
         else {

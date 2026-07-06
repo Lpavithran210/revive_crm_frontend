@@ -33,8 +33,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         else if (name === "payment_mode") {
             setFormData(prev => ({
                 ...prev,
-                payment_mode: value,
-                amount: value
+                payment_mode: value
             }));
         }
         else {
@@ -176,6 +175,12 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
     
         // ✅ SEND CLEAN DATA
         onSubmit(payload);
+
+        setFormData(prev => ({
+            ...prev,
+            amount: "",
+            payment_mode: ""
+        }));
     
         setSnackbarOpen(true);
     };

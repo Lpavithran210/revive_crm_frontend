@@ -79,7 +79,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         if (!formData.course) newErrors.course = "Course is required";
         if (!formData.source) newErrors.source = "Source is required";
         if (!formData.status) newErrors.status = "Status is required";
-        if (isUpdateMode && !formData.attender) newErrors.attender = "Attender is required";
+        if (!formData.attender) newErrors.attender = "Attender is required";
         if (formData.status === "Follow up") {
             if (!formData.follow_up_date) newErrors.follow_up_date = "Follow-up time required";
         }
@@ -237,17 +237,17 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                     </FormControl>
                 </Grid>
                 {isUpdateMode && (
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <FormControl fullWidth size="small" error={!!errors.attender}>
-                            <Typography variant='body2'>Attender</Typography>
-                            <Select fullWidth size="small" name="attender" disabled={isUser} value={formData.attender} onChange={handleInputChange}>
-                                {members.map((person, ind) => {
-                                    console.log(person)
-                                return <MenuItem key={ind} value={person.name}>{person.name}</MenuItem>
-                            })}
-                        </Select>
-                        {errors.attender && <FormHelperText>{errors.attender}</FormHelperText>}
-                    </FormControl>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <FormControl fullWidth size="small" error={!!errors.attender}>
+                        <Typography variant='body2'>Attender</Typography>
+                        <Select fullWidth size="small" name="attender" disabled={isUser} value={formData.attender} onChange={handleInputChange}>
+                            {members.map((person, ind) => {
+                                console.log(person)
+                            return <MenuItem key={ind} value={person.name}>{person.name}</MenuItem>
+                        })}
+                    </Select>
+                    {errors.attender && <FormHelperText>{errors.attender}</FormHelperText>}
+                </FormControl>
                 </Grid>)}
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <FormControl fullWidth size="small" error={!!errors.status}>

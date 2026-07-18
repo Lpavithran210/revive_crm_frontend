@@ -79,7 +79,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         if (!formData.course) newErrors.course = "Course is required";
         if (!formData.source) newErrors.source = "Source is required";
         if (!formData.status) newErrors.status = "Status is required";
-        if (!formData.attender) newErrors.attender = "Attender is required";
+        if (isUpdateMode && !formData.attender) newErrors.attender = "Attender is required";
         if (formData.status === "Follow up") {
             if (!formData.follow_up_date) newErrors.follow_up_date = "Follow-up time required";
         }
@@ -113,9 +113,11 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
     }, [formData.payments]);
     
     const handleFormSubmit = () => {
+        console.log("isUser:", isUser);
         if (isUser) return;
         if (!validateForm()) return;
-    
+        console.log('calling')
+        
         let updatedPayments = [...(formData.payments || [])];
         let totalPaid = formData.paid_amount || 0;
     

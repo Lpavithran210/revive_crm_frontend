@@ -27,7 +27,7 @@ const columns = [
     { field: 'paid_amount', headerName: 'Paid Amount', width: 140, },
     { field: 'pending_amount', headerName: 'Pending Amount', width: 150, }, 
     { field: 'payment_status', headerName: 'Payment Status', width: 140, },
-    { field: 'createdAt', headerName: 'Created At', width: 200 },
+    { field: 'createdAtFormatted', headerName: 'Created At', width: 200 },
 ];
 
 const paginationModel = { page: 0, pageSize: 5 };
@@ -62,7 +62,8 @@ export default function StudentsTable({ records, refreshRecords }) {
             payment_status: item.payment_status || "Unpaid",
             city: item.city,
             qualification: item.qualification,
-            createdAt: dateFormat(item.createdAt),
+            createdAt: item.createdAt,
+            createdAtFormatted: dateFormat(item.createdAt),
         }
     });
         setStudents(studentRecord);
@@ -91,21 +92,29 @@ export default function StudentsTable({ records, refreshRecords }) {
     
     const downloadCSV = () => {
         if (!filteredStudents.length) return;
-        
-        const data = filteredStudents.map(({ name, phone, course, source, status, attender, payment_status, paid_amount, balance_amount, course_fee, city, qualification }) => ({
-            Name: name,
-            Phone: phone,
-            Course: course,
-            Source: source,
-            Status: status,
-            Attender: attender,
-            CourseFee: course_fee,
-            PaidAmount: paid_amount,
-            BalanceAmount: status === "Loss" ? "" : balance_amount,
-            PaymentStatus: status === "Loss" ? "" : payment_status,
-            City: city,
-            Qualification: qualification,
-        }));
+
+        const data = filteredStudents.map((student) => {
+            const latestHistory = student.history?.length ? student.history[student.history.length - 1] : {};
+            const leadAge = student.createdAt ? Math.floor( (new Date() - new Date(student.createdAt)) / (1000 * 60 * 60 * 24) ) : "";
+            return {
+                Name: student.name,
+                Phone: student.phone,
+                Course: student.course,
+                Source: student.source,
+                Status: student.status,
+                Attender: student.attender,
+                CourseFee: student.course_fee,
+                PaidAmount: student.paid_amount,
+                BalanceAmount: student.status === "Loss" ? "" : student.balance_amount,
+                PaymentStatus: student.status === "Loss" ? "" : student.payment_status,
+                City: student.city,
+                Qualification: student.qualification,
+                Comments: latestHistory.note || "",
+                FollowUpDate: latestHistory.follow_up_date ? dateFormat(latestHistory.follow_up_date) : "",
+                LastUpdated: latestHistory.updated_at ? dateFormat(latestHistory.updated_at) : "",
+                LeadAge: leadAge !== "" ? `${leadAge} Days` : "",
+            };
+        });
         
         const csv = Papa.unparse(data);
 

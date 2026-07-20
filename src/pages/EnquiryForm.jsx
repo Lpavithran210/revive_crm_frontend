@@ -20,7 +20,7 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const EnquiryForm = () => {
-    const [formData, setFormData] = useState({ paid_amount: 0, name: '', phone: '', course: '', city: '', source: '', status: '', attender: '', follow_up_date: '', note: '', balance_amount: 0, course_fee: 0, payment_status: '' });
+    const [formData, setFormData] = useState({ paid_amount: 0, name: '', phone: '', course: '', city: '', source: '', status: '', attender: '', follow_up_date: '', note: '', balance_amount: 0, course_fee: 0, concession_amount: 0, payable_fee: 0, payment_status: '' });
 
     const token = useSelector((state) => state.user.accessToken);
     const courses = useSelector(state => state.courses.allCourses)
@@ -101,9 +101,11 @@ const EnquiryForm = () => {
                 learning_mode: '',
                 qualification: '',
                 status: '',
-                attender: '',
+                attender: 'Unassigned',
                 payments: [],
                 course_fee: 0,
+                concession_amount: 0,
+                payable_fee: 0,
                 paid_amount: 0,
                 balance_amount: 0,
                 payment_status: 'Unpaid'

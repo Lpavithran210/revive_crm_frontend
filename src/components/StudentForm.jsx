@@ -24,16 +24,30 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         const { name, value } = e.target;
         if (name === "course") {
             const selectedCourse = courses.find(course => course.title === value);
+            const courseFee = Number(selectedCourse?.fee || 0);
+            const concession = Number(formData.concession_amount || 0);
+
             setFormData(prev => ({
                 ...prev,
                 course: value,
-                course_fee: selectedCourse?.fee || ""
+                course_fee: courseFee,
+                payable_fee: courseFee - concession
             }));
         }
         else if (name === "payment_mode") {
             setFormData(prev => ({
                 ...prev,
                 payment_mode: value
+            }));
+        }
+        else if (name === "concession_amount") {
+            const concession = Number(value || 0);
+            const courseFee = Number(formData.course_fee || 0);
+
+            setFormData(prev => ({
+                ...prev,
+                concession_amount: concession,
+                payable_fee: courseFee - concession
             }));
         }
         else {
@@ -54,7 +68,8 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         if (selectedCourse) {
             setFormData(prev => ({
                 ...prev,
-                course_fee: selectedCourse.fee
+                course_fee: selectedCourse.fee,
+                payable_fee: Number(selectedCourse.fee) - Number(prev.concession_amount || 0)
             }));
         }
     }, [formData.course, courses]);
@@ -101,35 +116,37 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
     };
 
     useEffect(() => {
-        const totalPaid =
-            formData.payments?.reduce(
-                (sum, p) => sum + Number(p.paid_amount || 0),
-                0
-            ) || 0;
-    
-        setFormData(prev => ({...prev, paid_amount: totalPaid, balance_amount: Number(prev.course_fee || 0) - totalPaid,
-            payment_status: totalPaid === 0 ? "Unpaid" : Number(prev.course_fee) - totalPaid > 0 ? "Partially Paid" : "Fully Paid"
-        }));
-    }, [formData.payments]);
+        const totalPaid = formData.payments?.reduce((sum, p) => sum + Number(p.paid_amount || 0), 0) || 0;
+         setFormData(prev => {
+            const courseFee = Number(prev.course_fee || 0);
+            const concession = Number(prev.concession_amount || 0);
+            const payableFee = courseFee - concession;
+            const balanceAmount = Math.max(payableFee - totalPaid, 0);
+
+            return {
+                ...prev,
+                payable_fee: payableFee,
+                paid_amount: totalPaid,
+                balance_amount: balanceAmount,
+                payment_status: totalPaid === 0 ? "Unpaid" : balanceAmount > 0 ? "Partially Paid" : "Fully Paid"
+            };
+        });
+    }, [formData.payments, formData.course_fee, formData.concession_amount]);
     
     const handleFormSubmit = () => {
-        console.log("isUser:", isUser);
         if (isUser) return;
         if (!validateForm()) return;
-        console.log('calling')
         
         let updatedPayments = [...(formData.payments || [])];
-        let totalPaid = formData.paid_amount || 0;
-    
         const newPayment = processPaymentOnCreate();
-    
+
         if (newPayment) {
             updatedPayments.push(newPayment);
-            totalPaid += newPayment.paid_amount;
         }
-    
-        const courseFee = Number(formData.course_fee || 0);
-        const balanceAmount = courseFee - totalPaid;
+
+        const totalPaid = updatedPayments.reduce( (sum, payment) => sum + Number(payment.paid_amount || 0), 0 );
+        const payableFee = Number(formData.course_fee || 0) - Number(formData.concession_amount || 0);
+        const balanceAmount = Math.max(payableFee - totalPaid, 0);
     
         let paymentStatus = "Unpaid";
         if (totalPaid > 0 && balanceAmount > 0) paymentStatus = "Partially Paid";
@@ -165,6 +182,8 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
         // ✅ BUILD FINAL PAYLOAD EXPLICITLY
         const payload = {
             ...formData,
+            payable_fee: payableFee,
+            concession_amount: Number(formData.concession_amount || 0),
             payments: updatedPayments,
             paid_amount: totalPaid,
             balance_amount: balanceAmount,
@@ -263,6 +282,22 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                         {errors.status && <FormHelperText>{errors.status}</FormHelperText>}
                     </FormControl>
                 </Grid>
+                {isUpdateMode && <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <FormControl fullWidth size="small" error={!!errors.disposition}>
+                        <Typography variant='body2'>Disposition</Typography>
+                        <Select fullWidth size="small" name="disposition" disabled={isUser} value={formData.disposition} onChange={handleInputChange}>
+                            <MenuItem value="RNR">RNR</MenuItem>
+                            <MenuItem value="Callback">Callback</MenuItem>
+                            <MenuItem value="Interested">Interested</MenuItem>
+                            <MenuItem value="Not Interested">Not Interested</MenuItem>
+                            <MenuItem value="Not Qualified">Not Qualified</MenuItem>
+                            <MenuItem value="Demo Scheduled">Demo Scheduled</MenuItem>
+                            <MenuItem value="Demo Completed">Demo Completed</MenuItem>
+                            <MenuItem value="Visit">Visit</MenuItem>
+                        </Select>
+                        {errors.disposition && <FormHelperText>{errors.disposition}</FormHelperText>}
+                    </FormControl>
+                </Grid>}
                 {formData.status === 'Follow up' && (
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <Box>
@@ -353,9 +388,27 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                     </Grid>
                 </>
                 )}
+                {isUpdateMode && <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Typography variant='body2'>Concession Amount</Typography>
+                    <TextField
+                        disabled={isUser}
+                        fullWidth
+                        size="small"
+                        type="number"
+                        name="concession_amount"
+                        value={formData.concession_amount || ''}
+                        onChange={handleInputChange}
+                    />
+                </Grid>}
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Typography variant='body2'>Course fee</Typography>
                     <Typography variant='body1'sx={{mt:'5px'}}>{formData.course_fee?.toLocaleString()}</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Typography variant="body2">Payable Fee</Typography>
+                    <Typography variant="body1" sx={{ mt: "5px" }}>
+                        {(formData.payable_fee)?.toLocaleString()}
+                    </Typography>
                 </Grid>
                 {isUpdateMode && <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <FormControl fullWidth size="small">

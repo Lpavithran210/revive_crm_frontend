@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
-import { Box, Button, Dialog, DialogContent, DialogTitle, InputAdornment, TextField, Typography } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, InputAdornment, TextField, Typography, Chip } from '@mui/material';
 import StudentForm, { dateFormat } from './StudentForm';
 import SearchIcon from '@mui/icons-material/Search';
 import { apiCall } from '../utils/axios';
 import Papa from 'papaparse';
 import { useSelector } from 'react-redux';
+
+const dispositionColors = {
+    "Not Contacted": { bg: "#9E9E9E", color: "#fff", },
+    "RNR": { bg: "#EF5350", color: "#fff", },
+    "Call Back": { bg: "#FFA726", color: "#fff", },
+    "Interested": { bg: "#4CAF50", color: "#fff", },
+    "Not Interested": { bg: "#E53935", color: "#fff", },
+    "Not Qualified": { bg: "#8D6E63", color: "#fff", },
+    "Demo Scheduled": { bg: "#42A5F5", color: "#fff", },
+    "Demo Completed": { bg: "#5E35B1", color: "#fff", },
+    "Visit": { bg: "#26A69A", color: "#fff", },
+};
 
 const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
@@ -21,6 +33,31 @@ const columns = [
     },
     { field: 'source', headerName: 'Source', width: 160 },
     { field: 'status', headerName: 'Status', width: 160 }, 
+    {
+        field: "disposition",
+        headerName: "Disposition",
+        width: 180,
+        renderCell: (params) => {
+            const style = dispositionColors[params.value] || {
+                bg: "#BDBDBD",
+                color: "#fff",
+            };
+
+            return (
+                <Chip
+                    label={params.value}
+                    size="small"
+                    sx={{
+                        backgroundColor: style.bg,
+                        color: style.color,
+                        fontWeight: 600,
+                        minWidth: 120,
+                        justifyContent: "center",
+                    }}
+                />
+            );
+        },
+    },
     { field: 'attender', headerName: 'Attender', width: 160 },
     { field: 'city', headerName: 'City', width: 150 },
     { field: 'qualification', headerName: 'Qualification', width: 180 },
@@ -51,13 +88,16 @@ export default function StudentsTable({ records, refreshRecords }) {
             phone: item.phone,
             course: item.course,
             course_fee: item.course_fee,
+            concession_amount: item.concession_amount || 0,
+            payable_fee: item.payable_fee || item.course_fee,
             source: item.source,
             status: item.status,
+            disposition: item.disposition,
             history: item.history || [],
             attender: item.attender,
             payments: item.payments || [],
             paid_amount: item.payments?.length ? totalPaid : "NA",
-            pending_amount: item.payments?.length ? (item.balance_amount ?? 0) : "NA",
+            pending_amount: totalPaid > 0 ? item.balance_amount : "NA",
             balance_amount: item.balance_amount || 0,
             payment_status: item.payment_status || "Unpaid",
             city: item.city,
@@ -102,6 +142,7 @@ export default function StudentsTable({ records, refreshRecords }) {
                 Course: student.course,
                 Source: student.source,
                 Status: student.status,
+                Disposition: student.disposition,
                 Attender: student.attender,
                 CourseFee: student.course_fee,
                 PaidAmount: student.paid_amount,

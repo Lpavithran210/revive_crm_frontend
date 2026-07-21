@@ -293,6 +293,7 @@ const StudentForm = ({ formData, setFormData, onSubmit, setOpenPopup, isUpdateMo
                             <MenuItem value="Not Qualified">Not Qualified</MenuItem>
                             <MenuItem value="Demo Scheduled">Demo Scheduled</MenuItem>
                             <MenuItem value="Demo Completed">Demo Completed</MenuItem>
+                            <MenuItem value="Joined">Joined</MenuItem>
                             <MenuItem value="Visit">Visit</MenuItem>
                         </Select>
                         {errors.disposition && <FormHelperText>{errors.disposition}</FormHelperText>}

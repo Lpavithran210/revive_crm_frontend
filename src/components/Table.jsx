@@ -17,6 +17,7 @@ const dispositionColors = {
     "Not Qualified": { bg: "#8D6E63", color: "#fff", },
     "Demo Scheduled": { bg: "#42A5F5", color: "#fff", },
     "Demo Completed": { bg: "#5E35B1", color: "#fff", },
+    "Joined": { bg: "#00897B", color: "#fff" },
     "Visit": { bg: "#26A69A", color: "#fff", },
 };
 
